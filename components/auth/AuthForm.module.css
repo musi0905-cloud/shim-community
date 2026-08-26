@@ -1,0 +1,40 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.sentWrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.sentTitle {
+  font-size: var(--font-size-section-title);
+  line-height: var(--line-height-section-title);
+  font-weight: var(--font-weight-section-title);
+}
+
+.sentBody {
+  margin-top: var(--space-2);
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-body);
+  color: var(--text-secondary);
+  overflow-wrap: anywhere; /* 긴 이메일이 카드를 밀어내지 않게 */
+}
+
+.resendForm {
+  display: flex;
+}
+
+.resendForm > * {
+  flex: 1;
+}
+
+.note {
+  font-size: var(--font-size-caption);
+  line-height: var(--line-height-caption);
+  color: var(--text-secondary);
+  text-align: center;
+}

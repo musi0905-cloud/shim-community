@@ -50,3 +50,8 @@
 .fullWidth {
   width: 100%;
 }
+
+/* 링크로 쓰일 때. 버튼 기본 스타일에서 밑줄만 걷어낸다. */
+.asLink {
+  text-decoration: none;
+}

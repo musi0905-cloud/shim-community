@@ -1,0 +1,65 @@
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.label {
+  font-size: var(--font-size-caption);
+  line-height: var(--line-height-caption);
+  color: var(--text-secondary);
+}
+
+.input {
+  width: 100%;
+  min-height: var(--touch-target-min);
+  padding: var(--space-3) var(--space-4);
+
+  font: inherit;
+  font-size: var(--font-size-body);
+  color: var(--text-primary);
+
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+
+  transition: border-color var(--duration-fast) var(--easing-standard);
+}
+
+.input::placeholder {
+  color: var(--text-secondary);
+  opacity: 0.7;
+}
+
+.input:hover:not(:disabled) {
+  border-color: var(--border-strong);
+}
+
+.input:focus {
+  border-color: var(--primary);
+}
+
+.input:disabled {
+  background: var(--surface-soft);
+  color: var(--text-secondary);
+  cursor: not-allowed;
+}
+
+/* 오류는 색만이 아니라 테두리 굵기와 아래 문구로 함께 알린다. */
+.invalid,
+.invalid:hover:not(:disabled) {
+  border-color: var(--danger);
+  border-width: 2px;
+}
+
+.message {
+  font-size: var(--font-size-caption);
+  line-height: var(--line-height-caption);
+  color: var(--danger);
+}
+
+.hint {
+  font-size: var(--font-size-caption);
+  line-height: var(--line-height-caption);
+  color: var(--text-secondary);
+}

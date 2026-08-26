@@ -34,37 +34,46 @@ Service Worker, Geolocation 권한 요청, 지도/장소 API, Premium/결제, �
 **미확정 제품 쟁점 0건.** PO-001(독립 제품) / PO-002(Community 예외 + 영구 금지목록) /
 PO-003(Rest Plan + 3영역 렌더링)으로 모두 해소되었다. 상세는 `docs/SOURCE-OF-TRUTH.md`.
 
-## Sprint 1 — Routing & 쉼 Flow
+## Sprint 1 — Auth & 지속 익명 정체성 ✅ (코드 완료 / 실제 연결 대기)
 
-- 5개 라우트 실제 연결 (`/`, `/write`, `/shared-day`, `/my-rest`, `/short-rest`)
-- Bottom Nav / Sidebar를 `<Link>` + `usePathname()`으로 교체
-- 상태 선택 → 다음 화면으로 이어지는 흐름 (mock 데이터)
-- 글쓰기 화면 기본 UI
+- [x] Supabase Auth (Email Magic Link) + `@supabase/ssr` 구조
+- [x] `profiles` 마이그레이션 + RLS 정책 4종 + updated_at 트리거
+- [x] auth-aware `/`, `/auth`, `/auth/confirm`, `/onboarding/nickname`, `/settings`
+- [x] 닉네임 검증(2~16자, 금칙어, 보이지 않는 문자) — 중복은 허용
+- [x] 로그아웃, 라우트 가드, 탭 간 세션 동기화
+- [ ] **실제 Supabase 프로젝트 연결 + E2E 검증** — credential 미제공으로 미수행
+
+설정 절차는 `docs/ARCHITECTURE.md` 「Supabase 설정 절차」 참고.
+
+## Sprint 2 — Write & Post 저장
+
+- `/write` 화면, 상태 선택 → Write 연결
+- `posts` 테이블 + RLS, `MoodStateId` 영속화
+- `NAV_ITEMS` 의 `routed` 를 페이지가 생기는 대로 켠다
 
 > `docs/PRODUCT.md` §5 Core Flow를 기준으로 진행한다.
 > 공식 디자인이 확정되기 전까지 Home/Write/AI Rest/Feed/My Rest를 임의로 재설계하지 않는다.
 > `prototype.sprint0-reference.html`은 Historical Reference이며 설계 근거로 쓰지 않는다.
 
-## Sprint 2 — Auth & 익명성
+## Sprint 3 — AI Rest
 
-- Supabase Auth 연결, 닉네임 placeholder 교체
-- 익명성 경계 정의
+- Rest Plan 생성 (Backend structured / Frontend 3영역, PO-003)
+- Safety Flow 분리 (`docs/PRODUCT.md` §13)
+- 대화형 아님. 장시간 대화를 시작하지 않는다.
 
-## Sprint 3 — Post 저장
+## Sprint 4 — Rest Timer
 
-- 스키마 정의, 글 저장/조회, `MoodStateId` 영속화
+- 3 / 5 / 10분. 화면을 보지 않는 것이 정상 상태인 UI
 
-## Sprint 4 — 함께한 하루
+## Sprint 5 — Community Feed
 
-- 같은 상태를 고른 사람들의 기록 (랭킹·인기순 없음)
+- 같은 상태를 보낸 사람들의 기록
+- 댓글·인기순·Infinite Scroll 없음 (PO-002 영구 금지)
+- 다른 사용자 닉네임 공개 조회용 public-safe view 설계
 
-## Sprint 5 — AI 쉼 응답
+## Sprint 6 — 내 쉼 / 짧은 쉼
 
-- 짧은 공감 → 쉼 행동 1개 → 화면 내려놓기 유도. 대화형 아님.
-
-## Sprint 6 — 짧은 쉼 / 내 쉼
-
-- 짧은 쉼 콘텐츠, 지나온 기록
+- 지나온 기록, 짧은 쉼 콘텐츠
 
 ## Sprint 7 — PWA 완성
 

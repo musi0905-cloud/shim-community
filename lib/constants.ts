@@ -13,38 +13,45 @@ export const BRAND_COLORS = {
 
 /**
  * Shell 네비게이션.
- * Sprint 0에서는 href를 라우팅에 쓰지 않고 (아직 해당 페이지가 없다)
- * 구조와 active state만 잡는다. Sprint 1에서 Link로 교체한다.
+ *
+ * routed: true 인 항목만 실제 <Link> 로 이동한다. 나머지는 해당 페이지가
+ * 아직 없어서(Sprint 2 이후) 링크로 만들면 404 가 된다. 죽은 링크를 두는
+ * 대신 이동하지 않는 버튼으로 남기고, 페이지가 생기면 routed 를 켠다.
  */
 export const NAV_ITEMS: readonly NavItem[] = [
   {
     id: "home",
     label: "홈",
     href: "/",
+    routed: true,
     description: "오늘의 상태를 고르는 곳",
   },
   {
     id: "write",
     label: "글쓰기",
-    href: "/write",
+    routed: false,
+    plannedPath: "/write",
     description: "마음에 남은 말을 적는 곳",
   },
   {
     id: "shared-day",
     label: "함께한 하루",
-    href: "/shared-day",
+    routed: false,
+    plannedPath: "/shared-day",
     description: "같은 하루를 보낸 사람들의 기록",
   },
   {
     id: "my-rest",
     label: "내 쉼",
-    href: "/my-rest",
+    routed: false,
+    plannedPath: "/my-rest",
     description: "내가 지나온 쉼의 기록",
   },
   {
     id: "short-rest",
     label: "짧은 쉼",
-    href: "/short-rest",
+    routed: false,
+    plannedPath: "/short-rest",
     description: "지금 바로 할 수 있는 짧은 쉼",
   },
 ] as const;
@@ -83,5 +90,5 @@ export const MOOD_STATES: readonly MoodState[] = [
   },
 ] as const;
 
-/** 로그인이 붙기 전까지 홈 상단에 보여줄 임시 이름. */
-export const PLACEHOLDER_NICKNAME = "이름 없는 사람";
+/** 설정 화면. 네비게이션 목록과 별개로 접근한다. */
+export const SETTINGS_HREF = "/settings";

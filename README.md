@@ -32,8 +32,12 @@ Rest Plan을 다루고, Frontend는 이를 3영역으로 렌더링한다 (PO-003
 
 ## 실행
 
+Supabase 프로젝트가 필요하다. 설정 절차는
+`docs/ARCHITECTURE.md` 「Supabase 설정 절차」를 따른다.
+
 ```bash
-npm install
+cp .env.local.example .env.local   # 값을 채운다
+npm ci
 npm run dev     # http://localhost:3000
 npm run build
 npm run start
@@ -45,12 +49,18 @@ Node 20 이상, Next.js App Router, TypeScript strict.
 ## 구조
 
 ```
-app/          layout / page / globals.css (design token)
+app/          라우트. auth-aware `/`, /auth, /onboarding/nickname, /settings
 components/
-  layout/     AppShell, DesktopSidebar, MobileBottomNav, RightContextPanel
-  ui/         SurfaceCard, PrimaryButton, StateCard
-  home/       MoodStateSelector
-lib/          platform.ts, constants.ts, types.ts
+  layout/     AppShell, DesktopSidebar, MobileBottomNav, RightContextPanel, AuthShell
+  ui/         SurfaceCard, PrimaryButton, ButtonLink, StateCard, TextField
+  home/       Landing, MoodStateSelector
+  auth/       AuthForm, NicknameForm, SignOutButton, SessionSync
+lib/
+  supabase/   client.ts, server.ts, proxy.ts, env.ts
+  auth/       dal.ts (인가), form-state.ts
+  nickname.ts, platform.ts, constants.ts, types.ts
+proxy.ts      세션 갱신 (Next 16에서 middleware 의 새 이름)
+supabase/migrations/   profiles 테이블 + RLS
 public/       manifest.webmanifest, icons/
 docs/         PRODUCT.md, SOURCE-OF-TRUTH.md, ARCHITECTURE.md, SPRINTS.md
 prototype.sprint0-reference.html   Historical Sprint 0 Reference (공식 기준 아님)
@@ -80,8 +90,19 @@ Soft Green / Warm Beige / Off White. 넓은 여백, 낮은 정보 밀도, 최소
 `env(safe-area-inset-bottom)`은 `--safe-bottom` 토큰을 통해 Bottom Navigation의
 `padding-bottom`과 본문 하단 여백에 함께 반영된다. `viewport-fit=cover`가 전제다.
 
+## 인증
+
+Email Magic Link 방식이다. 비밀번호가 없다.
+
+닉네임의 source of truth 는 서버의 `profiles` 테이블이며 localStorage 가
+아니다. 로그아웃 후 재로그인해도, 다른 기기에서 로그인해도 같은 이름으로
+이어진다. `email` 은 `profiles` 에 복제하지 않는다.
+
+세션은 쿠키에 저장된다(`@supabase/ssr`). 인가는 `lib/auth/dal.ts` 에서만
+하고, `proxy.ts` 는 세션 갱신만 한다. 마지막 방어선은 Postgres RLS 다.
+
 ## 현재 상태
 
-Sprint 0 (Foundation) 완료, Sprint 0.1 (Repository & Source-of-Truth Correction) 완료.
-PO-001 / PO-002 / PO-003 확정. 미확정 제품 쟁점 없음.
+Sprint 0 / 0.1 완료. Sprint 1 (Auth & 지속 익명 정체성) 코드 완료.
+Supabase 프로젝트 연결 후 E2E 검증이 남아 있다.
 상세는 `docs/SPRINTS.md` 참고.
