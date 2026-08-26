@@ -90,6 +90,17 @@ Soft Green / Warm Beige / Off White. 넓은 여백, 낮은 정보 밀도, 최소
 `env(safe-area-inset-bottom)`은 `--safe-bottom` 토큰을 통해 Bottom Navigation의
 `padding-bottom`과 본문 하단 여백에 함께 반영된다. `viewport-fit=cover`가 전제다.
 
+## 배포
+
+**Claude Cloud → GitHub → Vercel → Supabase.** 로컬 실행은 필요 없다.
+
+배포와 Supabase 대시보드 설정 절차는 `docs/RUNBOOK-vercel-deploy.md` 를 따른다.
+Vercel 전용 설정 파일(`vercel.json`)은 두지 않는다 — Next.js 는 zero-config 로
+배포된다.
+
+환경변수 3개가 필요하다. `NEXT_PUBLIC_SITE_URL` 은 **Production 에만** 넣는다.
+Preview 에도 넣으면 Preview 에서 보낸 메일이 Production 으로 돌아온다.
+
 ## 검증
 
 실제 Supabase 연결 후의 검증 절차는 `docs/RUNBOOK-supabase-e2e.md` 하나만

@@ -45,6 +45,14 @@ PO-003(Rest Plan + 3영역 렌더링)으로 모두 해소되었다. 상세는 `d
 
 설정 절차는 `docs/ARCHITECTURE.md` 「Supabase 설정 절차」 참고.
 
+## Sprint 1.2 — Vercel 배포 + Supabase Production E2E (진행 중)
+
+- [x] Vercel 배포 적합성 점검 (zero-config, proxy.ts, 환경변수 사용 방식)
+- [x] Production 환경에서 매직 링크 주소를 잘못 잡던 origin fallback 수정
+- [x] `docs/RUNBOOK-vercel-deploy.md` — 배포·대시보드 설정·E2E 절차
+- [ ] **Vercel 배포 및 실사용 E2E** — 세션에서 `*.vercel.app` / `*.supabase.co`
+      접근이 차단되어 사람이 브라우저에서 수행해야 한다
+
 ## Sprint 2 — Write & Post 저장
 
 - `/write` 화면, 상태 선택 → Write 연결

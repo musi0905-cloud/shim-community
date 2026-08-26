@@ -6,6 +6,33 @@ import { getSiteUrl } from "@/lib/supabase/env";
 import type { AuthActionState } from "@/lib/auth/form-state";
 
 /**
+ * 이 요청이 실제로 도착한 주소를 알아낸다.
+ *
+ * NEXT_PUBLIC_SITE_URL 이 없을 때(= Vercel Preview 등) 매직 링크가 돌아올 곳을
+ * 정하는 데 쓴다. localhost 를 하드코딩해 두면 Preview 배포에서 링크가
+ * localhost 로 나가 버린다.
+ *
+ * origin → x-forwarded-proto + host → localhost 순으로 본다.
+ * Vercel 은 프록시 뒤에 있으므로 host 만 보면 프로토콜을 알 수 없다.
+ *
+ * 이 값을 그대로 믿어도 되는 이유: Supabase 가 redirect_to 를 Redirect URLs
+ * 허용목록과 대조하고, 목록에 없으면 무시하고 Site URL 로 대체한다.
+ * (GoTrue utilities.GetReferrer / IsRedirectURLValid)
+ * 즉 헤더를 위조해도 허용목록 밖으로는 메일이 나가지 않는다.
+ */
+function resolveOrigin(headerList: Headers): string {
+  const origin = headerList.get("origin");
+  if (origin) return origin;
+
+  const host = headerList.get("host");
+  if (host) {
+    const proto = headerList.get("x-forwarded-proto") ?? "https";
+    return `${proto}://${host}`;
+  }
+  return "http://localhost:3000";
+}
+
+/**
  * 서버에서도 이메일 형식을 확인한다.
  * 브라우저의 type="email" 검증은 우회할 수 있으므로 신뢰하지 않는다.
  */
@@ -38,7 +65,7 @@ export async function sendMagicLink(
   }
 
   const headerList = await headers();
-  const origin = headerList.get("origin") ?? "http://localhost:3000";
+  const origin = resolveOrigin(headerList);
 
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithOtp({
