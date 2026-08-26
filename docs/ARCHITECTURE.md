@@ -177,12 +177,37 @@ interface RestPlan {
 3. **Redirect URL 허용** — Authentication → URL Configuration 에
    `http://localhost:3000/auth/confirm` (배포 시 실제 도메인) 을 추가한다.
 
-4. **이메일 템플릿** (권장) — Authentication → Email Templates → Magic Link 의
-   링크를 아래로 바꾼다.
+4. **이메일 템플릿** (권장) — Authentication → Email Templates 에서
+   **두 개**를 모두 바꾼다.
+
+   - **Confirm signup**
+   - **Magic Link**
+
+   둘 다 링크를 아래로 바꾼다.
 
    ```
    {{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email
    ```
+
+   **두 개를 모두 바꿔야 하는 이유.** `signInWithOtp({ shouldCreateUser: true })`
+   는 대상에 따라 서로 다른 메일을 보낸다. GoTrue 의 `magic_link.go` 는 사용자를
+   찾지 못하면 `Signup` 경로로 넘기므로,
+
+   - **처음 오는 사람** → Confirm signup 템플릿
+   - **다시 오는 사람** → Magic Link 템플릿
+
+   하나만 바꾸면 나머지 절반의 사용자에게서 로그인이 깨진다.
+
+   **`type=email` 인 이유.** GoTrue 의 verify 는 `type=email`
+   (`EmailOTPVerification`) 일 때 `confirmation_token` 과 `recovery_token` 을
+   **모두** 확인한다. 그래서 두 템플릿 모두 같은 `type=email` 로 둘 수 있다.
+   반면 Confirm signup 은 `confirmation_token`, Magic Link 는 `recovery_token`
+   에 값을 넣으므로, `type=signup` / `type=magiclink` 로 각각 맞추면 서로
+   바꿔 쓸 수 없다.
+
+   > 위 변수명(`{{ .SiteURL }}` `{{ .TokenHash }}`)과 `type` 값은 추측이 아니라
+   > GoTrue 소스(`supabase/auth`)의 `internal/mailer/templatemailer/templatemailer.go`
+   > 와 `internal/api/verify.go` 에서 확인한 것이다.
 
    기본 템플릿(`{{ .ConfirmationURL }}`)도 동작하지만 PKCE 흐름이라
    **메일을 요청한 그 브라우저에서 링크를 열어야 한다.** code_verifier 가

@@ -90,6 +90,18 @@ Soft Green / Warm Beige / Off White. 넓은 여백, 낮은 정보 밀도, 최소
 `env(safe-area-inset-bottom)`은 `--safe-bottom` 토큰을 통해 Bottom Navigation의
 `padding-bottom`과 본문 하단 여백에 함께 반영된다. `viewport-fit=cover`가 전제다.
 
+## 검증
+
+실제 Supabase 연결 후의 검증 절차는 `docs/RUNBOOK-supabase-e2e.md` 하나만
+따라가면 된다.
+
+```bash
+npm run verify:supabase                                # 비로그인 RLS 검사
+npm run verify:supabase -- --jwt-a <A토큰> --jwt-b <B토큰>   # 사용자 간 RLS 검사
+```
+
+스키마 검증은 `supabase/verify_schema.sql` 을 SQL Editor 에서 실행한다.
+
 ## 인증
 
 Email Magic Link 방식이다. 비밀번호가 없다.
