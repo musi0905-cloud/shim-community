@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { APP_NAME, APP_SHORT_NAME } from "@/lib/constants";
+import { BRAND_NAME, BRAND_SUBTITLE } from "@/lib/constants";
 import styles from "./AuthShell.module.css";
 
 interface AuthShellProps {
@@ -16,11 +16,15 @@ export function AuthShell({ title, description, children }: AuthShellProps) {
   return (
     <div className={styles.shell}>
       <div className={styles.panel}>
+        {/* 이름과 부제를 한 줄로 붙이지 않는다. 두 줄 계층으로 둔다. */}
         <div className={styles.brand}>
           <span className={styles.mark} aria-hidden="true">
-            {APP_SHORT_NAME}
+            {BRAND_NAME}
           </span>
-          <span className={styles.brandName}>{APP_NAME}</span>
+          <span className={styles.brandText}>
+            <span className={styles.brandName}>{BRAND_NAME}</span>
+            <span className={styles.brandSubtitle}>{BRAND_SUBTITLE}</span>
+          </span>
         </div>
 
         <header className={styles.header}>

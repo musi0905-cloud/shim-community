@@ -1,15 +1,25 @@
-# 쉼 Community
+# 쉼 — 나만의 공간
 
 > **오늘의 마음을 잠깐 내려놓는 곳.**
+>
+> 도파민보다, 쉼.
 
 힘든 순간, 잠시 현실에서 거리를 두고 나에게 돌아올 수 있는 시간을 만드는
 Responsive Web / PWA 서비스.
+
+**브랜드는 「쉼」, 부제는 「나만의 공간」이다.** 두 줄 계층으로 쓰고
+"쉼: 나만의 공간" 처럼 한 줄로 붙이지 않는다. 브랜드 메시지
+「도파민보다, 쉼.」은 Landing 같은 브랜드 화면에서만 쓴다.
+
+기술 식별자는 그대로 `shim-community` 다 — 저장소, Vercel 프로젝트,
+npm package name, Supabase 프로젝트 모두. 브랜드를 바꿨다고 인프라를
+rename 하지 않는다.
 
 > **제품 기준**: `docs/PRODUCT.md`가 최상위 기준이다. 출처와 확정 결정은 `docs/SOURCE-OF-TRUTH.md`.
 > `prototype.sprint0-reference.html`은 **Historical Sprint 0 Reference**이며 공식 Design
 > Source of Truth가 아니다.
 >
-> **제품 지위**: 쉼 Community는 쉼 iOS의 보조 채널이 아니라 **독립 제품**이다. (PO-001)
+> **제품 지위**: 이 제품(웹/PWA)은 쉼 iOS의 보조 채널이 아니라 **독립 제품**이다. (PO-001)
 
 ## 제품 원칙
 

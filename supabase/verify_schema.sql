@@ -1,4 +1,4 @@
--- 쉼 Community — 마이그레이션 적용 결과 검증
+-- 쉼 — 마이그레이션 적용 결과 검증
 --
 -- Supabase SQL Editor 에 그대로 붙여넣고 실행한다.
 -- 모든 행의 result 가 PASS 여야 한다.

@@ -1,12 +1,45 @@
-# 쉼 Community — Product Definition v0.1
+# 쉼 — 나만의 공간 · Product Definition v0.1
 
-> **적용 범위**: 쉼 Community (Responsive Web / PWA). 쉼 iOS 앱에는 적용되지 않는다.
-> **지위**: 이 문서가 쉼 Community의 최상위 제품 기준이다.
+> **적용 범위**: 이 제품(Responsive Web / PWA). 쉼 iOS 앱에는 적용되지 않는다.
+> **지위**: 이 문서가 이 제품의 최상위 제품 기준이다.
 > **확정일**: 2026-08-26 (Sprint 0.1, Product Owner 결정 PO-001 / PO-002 / PO-003)
 >
 > 이 문서는 `musi0905-cloud/shim-ios` `docs/PRODUCT.md`(쉼 제품 기획 기준서 v0.1)의
 > 사본이 아니다. 두 제품은 브랜드 철학을 공유하지만 독립된 제품이며, iOS 기준서의
 > 플랫폼·범위 제약은 이 제품에 적용되지 않는다. (PO-001, PO-002)
+
+---
+
+## 0. 브랜드
+
+| 항목 | 값 |
+| --- | --- |
+| Brand | **쉼** |
+| Subtitle | **나만의 공간** |
+| Brand Message | **도파민보다, 쉼.** |
+| Product Description | **오늘의 마음을 잠깐 내려놓는 곳.** |
+
+표기 규칙:
+
+- 이름과 부제를 **두 줄 계층**으로 쓴다. `쉼: 나만의 공간` 처럼 한 줄로
+  붙이지 않는다.
+
+  ```
+  쉼
+  나만의 공간
+  ```
+
+- **브랜드 메시지는 Landing 등 브랜드 화면에서만** 쓴다. 앱 안쪽 화면마다
+  반복하면 카피가 아니라 소음이 된다.
+- 브라우저 탭처럼 한 줄이 강제되는 곳에서만 `쉼 — 나만의 공간` 을 쓴다.
+
+**이름이 겹치는 문제.** 쉼 iOS 도 브랜드가 「쉼」이다. 사용자에게는 둘 다
+「쉼」으로 보이는 것이 의도된 것이고, 문서·코드에서 두 제품을 구분해야 할
+때는 기술 식별자(`shim-ios` / `shim-community`)나 「iOS」/「웹」으로 쓴다.
+이전 이름 「쉼 Community」는 더 이상 사용자에게 노출하지 않는다.
+
+**기술 식별자는 브랜드와 별개다.** 저장소·Vercel·Supabase·npm package 이름은
+그대로 `shim-community` 다. 브랜드 변경으로 인프라를 rename 하지 않는다.
 
 ---
 
@@ -40,7 +73,7 @@
 
 **Mobile-first Responsive Web / PWA.**
 
-쉼 Community의 첫 플랫폼은 웹이다. iOS 기준서의 "첫 플랫폼은 iOS" 조항은
+이 제품의 첫 플랫폼은 웹이다. iOS 기준서의 "첫 플랫폼은 iOS" 조항은
 이 제품의 플랫폼 제약으로 적용하지 않는다. (PO-001)
 
 지원 뷰포트:
@@ -231,7 +264,7 @@ Premium은 **더 오래 머물게 하는 기능이 아니라 자기 이해를 �
 ```
 쉼
 ├─ 쉼 iOS            musi0905-cloud/shim-ios
-└─ 쉼 Community Web  musi0905-cloud/shim-community  (이 저장소)
+└─ 쉼 (웹/PWA)       musi0905-cloud/shim-community  (이 저장소)
 ```
 
 두 제품은 브랜드 철학과 "현실의 쉼으로 돌려보낸다"는 핵심 원칙, 유사한 AI Rest 철학을

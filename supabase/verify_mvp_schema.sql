@@ -1,4 +1,4 @@
--- 쉼 Community — MVP core 마이그레이션 적용 결과 검증 (Sprint 2)
+-- 쉼 — MVP core 마이그레이션 적용 결과 검증 (Sprint 2)
 --
 -- 20260827000000_mvp_core.sql 를 적용한 뒤 SQL Editor 에 붙여넣고 실행한다.
 -- 모든 행의 result 가 PASS 여야 한다. 읽기만 하며 데이터를 바꾸지 않는다.

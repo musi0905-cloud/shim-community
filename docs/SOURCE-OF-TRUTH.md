@@ -1,4 +1,11 @@
-# Source of Truth — 쉼 Community
+# Source of Truth — 쉼 (웹/PWA)
+
+> **브랜드**: 「쉼」 / 부제 「나만의 공간」 / 메시지 「도파민보다, 쉼.」
+> 이전 이름 **「쉼 Community」는 더 이상 사용자에게 노출하지 않는다.**
+> 아래 결정 기록에 남아 있는 "쉼 Community" 는 **이 제품의 옛 이름**이며,
+> 결정 내용 자체는 그대로 유효하다. 기록을 고쳐 쓰지 않는다.
+> 기술 식별자는 여전히 `shim-community` 다.
+> 브랜드 표기 규칙은 `docs/PRODUCT.md` §0.
 
 이 문서는 "무엇을 제품 기준으로 삼는가"만 정의한다. 기준 자체는 `docs/PRODUCT.md`에 있다.
 
@@ -8,7 +15,7 @@
 
 | 순위 | 문서 | 범위 |
 | --- | --- | --- |
-| 1 | `docs/PRODUCT.md` | **쉼 Community 최상위 제품 기준** |
+| 1 | `docs/PRODUCT.md` | **이 제품의 최상위 기준 (브랜드 규칙 포함)** |
 | 2 | 이 문서 (`docs/SOURCE-OF-TRUTH.md`) | 기준의 출처와 확정된 결정 기록 |
 | 3 | `docs/ARCHITECTURE.md` | 기술 구조 결정 |
 | 4 | `docs/SPRINTS.md` | 작업 순서 |
@@ -98,7 +105,7 @@ Sprint 0에서 구현한 Home 화면의 상태 카드 문구·순서·hint 텍�
 
 ## 관련 저장소
 
-- `musi0905-cloud/shim-community` — **이 저장소.** 쉼 Community의 정식 저장소.
+- `musi0905-cloud/shim-community` — **이 저장소.** 「쉼」 웹/PWA 의 정식 저장소.
 - `musi0905-cloud/shim-ios` — 쉼 iOS 앱. 독립 제품.
 - `musi0905-cloud/App` — **무관한 Google Apps Script 프로젝트.** 쉼 파일을 넣지 않는다.
   근거: `shim-ios/docs/DECISIONS.md` D-002.

@@ -1,24 +1,32 @@
 import type { Metadata, Viewport } from "next";
 import {
-  APP_DESCRIPTION,
-  APP_NAME,
-  APP_SHORT_NAME,
+  BRAND_DESCRIPTION,
+  BRAND_NAME,
+  BRAND_TITLE,
   BRAND_COLORS,
 } from "@/lib/constants";
 import "./globals.css";
 
 export const metadata: Metadata = {
   title: {
-    default: APP_NAME,
-    template: `%s · ${APP_SHORT_NAME}`,
+    // 한 줄이 강제되는 자리라 계층 대신 BRAND_TITLE 을 쓴다.
+    default: BRAND_TITLE,
+    template: `%s · ${BRAND_NAME}`,
   },
-  description: APP_DESCRIPTION,
-  applicationName: APP_NAME,
+  description: BRAND_DESCRIPTION,
+  applicationName: BRAND_NAME,
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
-    title: APP_SHORT_NAME,
+    title: BRAND_NAME,
     statusBarStyle: "default",
+  },
+  openGraph: {
+    type: "website",
+    siteName: BRAND_NAME,
+    title: BRAND_TITLE,
+    description: BRAND_DESCRIPTION,
+    locale: "ko_KR",
   },
   formatDetection: { telephone: false },
 };

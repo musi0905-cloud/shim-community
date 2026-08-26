@@ -70,6 +70,16 @@ PO-003(Rest Plan + 3영역 렌더링)으로 모두 해소되었다. 상세는 `d
 - [ ] **Production E2E** — 세션에서 Vercel/Supabase 접근이 차단되어 사람이 수행
 - [ ] 계정 삭제 — service_role 이 필요해 보류. 사유와 계획은 ARCHITECTURE 참고
 
+## Brand Rename — 쉼 (Sprint 2 이후)
+
+사용자 노출명을 「쉼 Community」에서 **「쉼」 / 부제 「나만의 공간」**으로 바꿨다.
+브랜드 규칙은 `docs/PRODUCT.md` §0.
+
+바꾸지 않은 것: 저장소·Vercel 프로젝트·npm package name·Supabase 프로젝트 ref·
+DB 스키마·마이그레이션 이력. 전부 `shim-community` 그대로다.
+**이미 적용된 마이그레이션 파일의 주석도 고치지 않았다** — 적용된 파일은
+그대로 두는 것이 원칙이다.
+
 ## Sprint 3 이후 (다음 Phase)
 
 Sprint 2 가 기존 3~6 계획(Write / AI Rest / Timer / Feed / 내 쉼)을 흡수했다.

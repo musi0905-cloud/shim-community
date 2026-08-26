@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { APP_NAME, NAV_ITEMS, SETTINGS_HREF } from "@/lib/constants";
+import { BRAND_NAME, BRAND_SUBTITLE, NAV_ITEMS, SETTINGS_HREF } from "@/lib/constants";
 import type { NavItemId } from "@/lib/types";
 import { NavIcon } from "./NavIcon";
 import styles from "./DesktopSidebar.module.css";
@@ -14,8 +14,8 @@ export function DesktopSidebar({ activeId }: DesktopSidebarProps) {
   return (
     <nav className={styles.sidebar} aria-label="주요 메뉴">
       <div className={styles.brand}>
-        <span className={styles.brandName}>{APP_NAME}</span>
-        <span className={styles.brandNote}>잠시 멈추는 곳</span>
+        <span className={styles.brandName}>{BRAND_NAME}</span>
+        <span className={styles.brandNote}>{BRAND_SUBTITLE}</span>
       </div>
 
       <ul className={styles.list}>

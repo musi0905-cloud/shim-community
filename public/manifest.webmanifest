@@ -1,7 +1,7 @@
 {
-  "name": "쉼 Community",
+  "name": "쉼",
   "short_name": "쉼",
-  "description": "힘든 순간, 잠시 현실에서 거리를 두고 자기 자신에게 돌아가도록 돕는 공간",
+  "description": "오늘의 마음을 잠깐 내려놓는 곳.",
   "lang": "ko",
   "dir": "ltr",
   "start_url": "/",

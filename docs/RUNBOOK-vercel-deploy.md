@@ -183,6 +183,11 @@ https://shim-community-*-<team-slug>.vercel.app/auth/confirm
 
 ---
 
+> **참고**: 아래 7~9번은 Sprint 1.2 시점(매직 링크 로그인) 기준이다.
+> Sprint 2 에서 이메일+비밀번호로 바뀌었으므로, 실제 E2E 는
+> `docs/RUNBOOK-sprint2-verify.md` 를 따른다. 1~6번(배포·환경변수·Auth URL·
+> 템플릿)과 12.5(도메인 전환)는 그대로 유효하다.
+
 ## 7. 배포 URL 기본 확인
 
 브라우저에서 `https://<VERCEL_URL>` 로 접속한다.
@@ -344,6 +349,36 @@ rollback;
 - 데스크톱(≥1024): 좌측 사이드바
 - 터치 타깃 44px 이상
 - 콘솔 에러 없음
+
+---
+
+## 12.5 향후 Custom Domain 전환 (이번 작업 범위 아님)
+
+현재 `https://shim-community.vercel.app` 는 **beta / technical domain** 으로
+유지한다. 브랜드가 「쉼」으로 바뀌었어도 이 주소는 바꾸지 않는다.
+
+브랜드 도메인을 구매하면 그때 아래 순서로 전환한다. **지금 하지 않는다.**
+
+1. **Vercel** → Project → Settings → Domains → 새 도메인 추가, DNS 검증
+2. **Vercel 환경변수** → `NEXT_PUBLIC_SITE_URL` 을 새 도메인으로 변경
+   (Production 에만). 바꾼 뒤 **Redeploy** — `NEXT_PUBLIC_` 은 빌드 시점에
+   코드로 박힌다
+3. **Supabase** → Authentication → URL Configuration → **Site URL** 을
+   새 도메인으로 변경
+4. **Supabase** → 같은 화면 **Redirect URLs** 에 아래 두 개 추가
+   ```
+   https://<새 도메인>/auth/confirm
+   https://<새 도메인>/auth/callback
+   ```
+   기존 vercel.app 항목은 전환이 끝날 때까지 **남겨 둔다**. 먼저 지우면
+   그 사이에 발송된 메일 링크가 죽는다
+5. **이메일 템플릿** — `{{ .SiteURL }}` 을 쓰고 있으므로 3번만 바꾸면 링크가
+   따라간다. 템플릿 자체는 손대지 않아도 된다
+   (`{{ .RedirectTo }}` 방식으로 바꿔 뒀다면 4번 허용목록이 더 중요해진다)
+6. 전환 확인 후 옛 Redirect URL 정리
+
+바꾸지 않는 것: 저장소 이름, Vercel 프로젝트 이름, Supabase 프로젝트 ref,
+DB 스키마, 마이그레이션 이력. 도메인만 바뀐다.
 
 ---
 

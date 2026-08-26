@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * 쉼 Community — 실제 Supabase 환경 검증
+ * 쉼 — 실제 Supabase 환경 검증
  *
  * 실제 프로젝트에 붙어서 RLS 가 의도대로 동작하는지 확인한다.
  * service_role 을 쓰지 않는다. anon key 와 실제 로그인 사용자의 JWT 만 쓴다.

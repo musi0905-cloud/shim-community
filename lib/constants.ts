@@ -5,10 +5,29 @@ import type {
   ReactionType,
 } from "@/lib/types";
 
-export const APP_NAME = "쉼 Community";
-export const APP_SHORT_NAME = "쉼";
-export const APP_DESCRIPTION =
-  "힘든 순간, 잠시 현실에서 거리를 두고 자기 자신에게 돌아가도록 돕는 공간";
+/**
+ * 브랜드.
+ *
+ * 이름과 부제를 한 줄로 붙여 쓰지 않는다. "쉼: 나만의 공간" 같은 표기는
+ * 쓰지 않고, 화면에서는 두 줄 계층으로 놓는다.
+ *
+ *   쉼
+ *   나만의 공간
+ *
+ * BRAND_TITLE 은 브라우저 탭처럼 한 줄이 강제되는 곳에서만 쓴다.
+ * BRAND_MESSAGE 는 Landing 같은 브랜드 화면에서만 쓴다 — 앱 안쪽 화면마다
+ * 반복하면 카피가 아니라 소음이 된다.
+ *
+ * 기술 식별자(저장소·Vercel·Supabase 이름)는 여전히 shim-community 다.
+ * 브랜드를 바꿨다고 인프라를 rename 하지 않는다.
+ */
+export const BRAND_NAME = "쉼";
+export const BRAND_SUBTITLE = "나만의 공간";
+export const BRAND_MESSAGE = "도파민보다, 쉼.";
+export const BRAND_DESCRIPTION = "오늘의 마음을 잠깐 내려놓는 곳.";
+
+/** 한 줄 표기가 강제되는 곳(브라우저 탭, OG title)에서만. */
+export const BRAND_TITLE = `${BRAND_NAME} — ${BRAND_SUBTITLE}`;
 
 /** manifest / theme-color / 브라우저 UI와 globals.css 토큰을 한 곳에서 맞춘다. */
 export const BRAND_COLORS = {
