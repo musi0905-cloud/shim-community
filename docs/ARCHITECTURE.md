@@ -1,6 +1,6 @@
 # Architecture
 
-> 제품 기준은 `docs/SOURCE-OF-TRUTH.md`를 따른다. 이 문서는 기술 구조만 다룬다.
+> 제품 기준은 `docs/PRODUCT.md`를 따른다. 이 문서는 기술 구조만 다룬다.
 
 ## 스택
 
@@ -85,6 +85,21 @@ active state만 로컬에서 관리한다. Sprint 1에서 `next/link`의 `<Link>
 
 Service Worker와 실제 Push 발송은 Sprint 7 범위다. 현재는 PWA-ready 구조만 있다.
 아이콘은 placeholder(단색 원)이며 디자인 확정 후 교체한다.
+
+## AI Rest 연결 지점 (PO-003)
+
+Backend/Domain은 구조화된 Rest Plan을, Frontend는 3영역 표현을 다룬다.
+타입은 `lib/types.ts`에 두고 화면이 스키마를 직접 만들지 않게 한다.
+
+```ts
+interface RestPlan {
+  acknowledgement: string;
+  action: { type: string; duration_minutes: number; instruction: string };
+  closing: string;
+}
+```
+
+확장 예정: `placeRecommendation`, `safetyLevel`, `fallbackType`.
 
 ## 이후 Supabase 연결 지점
 

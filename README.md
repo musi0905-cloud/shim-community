@@ -1,29 +1,34 @@
 # 쉼 Community
 
-힘든 순간, 잠시 현실에서 거리를 두고 자기 자신에게 돌아가도록 돕는
+> **오늘의 마음을 잠깐 내려놓는 곳.**
+
+힘든 순간, 잠시 현실에서 거리를 두고 나에게 돌아올 수 있는 시간을 만드는
 Responsive Web / PWA 서비스.
 
-> **저장소 기준**: 이 프로젝트는 `musi0905-cloud/App`(무관한 Google Apps Script 프로젝트)과
-> 분리된 독립 저장소다. 근거는 `musi0905-cloud/shim-ios` `docs/DECISIONS.md` D-002.
+> **제품 기준**: `docs/PRODUCT.md`가 최상위 기준이다. 출처와 확정 결정은 `docs/SOURCE-OF-TRUTH.md`.
+> `prototype.sprint0-reference.html`은 **Historical Sprint 0 Reference**이며 공식 Design
+> Source of Truth가 아니다.
 >
-> **제품 기준**: `docs/SOURCE-OF-TRUTH.md`를 먼저 읽어라.
-> `prototype.sprint0-reference.html`은 공식 UX Reference가 **아니다.**
+> **제품 지위**: 쉼 Community는 쉼 iOS의 보조 채널이 아니라 **독립 제품**이다. (PO-001)
 
 ## 제품 원칙
 
-이 서비스는 **사용자를 오래 붙잡지 않는다.** 아래는 의도적으로 만들지 않는다.
+> 사용자를 오래 붙잡는 서비스가 아니라, 가능한 빨리 자기 자신에게 돌려보내는 서비스.
 
-- 댓글 / DM / 팔로우
-- 인기글 / 랭킹
-- 무한 스크롤
+**영구 금지** (제품 차원 확정, PO-002): 댓글 / DM / Follow / 친구 추가 / 인기글 /
+Trending / 조회수 경쟁 / Like 숫자 경쟁 / Ranking / Streak / Gamification /
+Infinite Scroll / 자극적인 추천 알고리즘
 
-AI는 상담 챗봇이 아니다. 사용자의 상태와 글을 읽고 다음 구조로만 응답한다.
+Feed는 Community의 핵심 기능이지만 SNS Feed와 동일하게 설계하지 않는다.
+Community의 목적은 사람을 붙잡는 것이 아니라 "내가 혼자가 아니라는 느낌을
+잠깐 전달하는 것"이다.
+
+AI는 상담 챗봇이 아니며 장시간 대화를 시작하지 않는다. Backend는 구조화된
+Rest Plan을 다루고, Frontend는 이를 3영역으로 렌더링한다 (PO-003).
 
 1. 짧은 공감
-2. 지금 할 수 있는 쉼 행동 1개
-3. 휴대폰을 내려놓도록 유도
-
-“사용자를 가능한 빨리 현실의 쉼으로 돌려보낸다”가 핵심 지표다.
+2. 구체적인 쉼 행동 1개
+3. 휴대폰을 내려놓도록 안내하는 쉼의 메시지
 
 ## 실행
 
@@ -47,8 +52,8 @@ components/
   home/       MoodStateSelector
 lib/          platform.ts, constants.ts, types.ts
 public/       manifest.webmanifest, icons/
-docs/         SOURCE-OF-TRUTH.md, PRODUCT.md, ARCHITECTURE.md, SPRINTS.md
-prototype.sprint0-reference.html   Sprint 0 생성 기록 (공식 기준 아님)
+docs/         PRODUCT.md, SOURCE-OF-TRUTH.md, ARCHITECTURE.md, SPRINTS.md
+prototype.sprint0-reference.html   Historical Sprint 0 Reference (공식 기준 아님)
 ```
 
 ## 디자인 방향
@@ -78,4 +83,5 @@ Soft Green / Warm Beige / Off White. 넓은 여백, 낮은 정보 밀도, 최소
 ## 현재 상태
 
 Sprint 0 (Foundation) 완료, Sprint 0.1 (Repository & Source-of-Truth Correction) 완료.
+PO-001 / PO-002 / PO-003 확정. 미확정 제품 쟁점 없음.
 상세는 `docs/SPRINTS.md` 참고.

@@ -27,9 +27,12 @@ Service Worker, Geolocation 권한 요청, 지도/장소 API, Premium/결제, �
 - [x] Bottom Navigation label 11px → 12px (padding/gap 조정으로 375px 수용)
 - [x] `env(safe-area-inset-bottom)` 실제 반영 검증
 
-미해결 (Product Owner 결정 필요) — `docs/SOURCE-OF-TRUTH.md` 참고:
-웹 Community와 iOS 앱의 관계, `docs/PRODUCT.md` §15와 Community 범위의 충돌,
-AI Rest 응답 형식(자연어 3단 구조 vs Rest Plan JSON)의 정합성.
+- [x] `musi0905-cloud/shim-community` 정식 저장소로 이전 (main)
+- [x] `docs/PRODUCT.md`를 쉼 Community 전용 Product Definition으로 재작성
+- [x] PO-001 / PO-002 / PO-003 확정 기록
+
+**미확정 제품 쟁점 0건.** PO-001(독립 제품) / PO-002(Community 예외 + 영구 금지목록) /
+PO-003(Rest Plan + 3영역 렌더링)으로 모두 해소되었다. 상세는 `docs/SOURCE-OF-TRUTH.md`.
 
 ## Sprint 1 — Routing & 쉼 Flow
 
@@ -38,8 +41,9 @@ AI Rest 응답 형식(자연어 3단 구조 vs Rest Plan JSON)의 정합성.
 - 상태 선택 → 다음 화면으로 이어지는 흐름 (mock 데이터)
 - 글쓰기 화면 기본 UI
 
-> ⚠️ Sprint 1 착수 전에 `docs/SOURCE-OF-TRUTH.md`의 미해결 항목을 먼저 확정해야 한다.
-> 공식 UX 정의 없이 Home/Write/AI Rest/Feed/My Rest를 재설계하지 않는다.
+> `docs/PRODUCT.md` §5 Core Flow를 기준으로 진행한다.
+> 공식 디자인이 확정되기 전까지 Home/Write/AI Rest/Feed/My Rest를 임의로 재설계하지 않는다.
+> `prototype.sprint0-reference.html`은 Historical Reference이며 설계 근거로 쓰지 않는다.
 
 ## Sprint 2 — Auth & 익명성
 
