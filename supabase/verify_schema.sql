@@ -88,10 +88,30 @@ with checks as (
     and conname in ('profiles_nickname_length','profiles_nickname_trimmed')
 
   -- 9. user_id 가 auth.users 를 참조하고 CASCADE 인가
+  --
+  -- confdeltype 은 내부 "char" 타입이다. text 와 바로 이어붙이면
+  --   ERROR: operator is not unique: text || "char"
+  -- 가 난다. "char" 를 받는 || 후보가 여럿이라 Postgres 가 하나를 못 고른다.
+  -- 그래서 명시적으로 text 로 캐스팅한다.
+  -- (pg_catalog 에서 "char" 를 쓰는 다른 컬럼: contype, relkind, prokind …
+  --  전부 문자열로 이어붙이기 전에 ::text 를 붙여야 한다.)
   union all
   select 9, 'user_id FK → auth.users ON DELETE CASCADE',
     count(*) = 1,
-    coalesce(string_agg(conname || ' confdeltype=' || confdeltype, ', '), '(없음)')
+    coalesce(
+      string_agg(
+        conname || ' → ' || case confdeltype::text
+          when 'c' then 'ON DELETE CASCADE'
+          when 'r' then 'ON DELETE RESTRICT'
+          when 'n' then 'ON DELETE SET NULL'
+          when 'd' then 'ON DELETE SET DEFAULT'
+          when 'a' then 'NO ACTION'
+          else 'confdeltype=' || confdeltype::text
+        end,
+        ', '
+      ),
+      '(없음)'
+    )
   from pg_constraint
   where conrelid = to_regclass('public.profiles')
     and contype = 'f'

@@ -269,29 +269,49 @@ npm run verify:supabase -- --jwt-a <A토큰> --jwt-b <B토큰>
 없으면 SQL Editor 에서 아래로 확인한다. **service_role 이 아니라
 authenticated 역할로 흉내 내는 것이 핵심이다.**
 
+> **반드시 `begin` … `rollback` 안에서 실행한다.**
+> `set local` 은 트랜잭션 블록 밖에서는 아무 일도 하지 않고
+> `WARNING: SET LOCAL can only be used in transaction blocks` 만 남긴다.
+> 그러면 역할이 SQL Editor 기본값(`postgres`) 그대로라 **RLS 를 통째로
+> 우회한 채** 검사가 돌고, 결과가 전부 무의미해진다.
+> `rollback` 으로 끝나므로 이 스크립트는 데이터를 바꾸지 않는다.
+
+`<A의 user_id>` / `<B의 user_id>` 를 실제 값으로 바꿔 넣는다.
+
 ```sql
--- A 의 user_id 로 authenticated 컨텍스트를 만든다
-set local role authenticated;
-set local request.jwt.claims = '{"sub":"<A의 user_id>"}';
+begin;
+  set local role authenticated;
+  set local request.jwt.claims = '{"sub":"<A의 user_id>"}';
 
-select count(*) as a_sees from public.profiles;              -- 1 이어야 한다
-update public.profiles set nickname = nickname
-  where user_id = '<A의 user_id>';                            -- UPDATE 1
-update public.profiles set nickname = '탈취'
-  where user_id = '<B의 user_id>';                            -- UPDATE 0
-insert into public.profiles (user_id, nickname)
-  values ('<B의 user_id>', '가짜');                            -- 정책 위반 에러
+  select current_role;                                    -- authenticated 여야 한다
+  select count(*) from public.profiles;                   -- 1 (자기 것만)
 
-reset role;
-set local role anon;
-set local request.jwt.claims = '';
-select count(*) from public.profiles;                         -- 0 또는 권한 에러
+  update public.profiles set nickname = nickname
+    where user_id = '<A의 user_id>';                       -- UPDATE 1
+  update public.profiles set nickname = '탈취'
+    where user_id = '<B의 user_id>';                       -- UPDATE 0
+
+  -- 정책 위반은 트랜잭션을 중단시키므로 savepoint 로 감싼다
+  savepoint before_bad_insert;
+  insert into public.profiles (user_id, nickname)
+    values ('<B의 user_id>', '가짜');                       -- 정책 위반 에러
+  rollback to savepoint before_bad_insert;
+rollback;
+
+begin;
+  set local role anon;
+  set local request.jwt.claims = '';
+  select count(*) from public.profiles;                   -- 0 또는 권한 에러
+rollback;
 ```
+
+`select current_role` 이 `authenticated` 가 아니면 나머지 결과는 믿지 않는다.
 
 기대값:
 
 | 검사 | 기대 |
 | --- | --- |
+| `current_role` | `authenticated` (아니면 아래 결과는 무효) |
 | A 자기 SELECT | 1행 |
 | A 자기 UPDATE | `UPDATE 1` |
 | A→B SELECT | 0행 |
