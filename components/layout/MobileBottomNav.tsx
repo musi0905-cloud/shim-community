@@ -8,10 +8,9 @@ import styles from "./MobileBottomNav.module.css";
 
 interface MobileBottomNavProps {
   activeId: NavItemId;
-  onNavigate: (id: NavItemId) => void;
 }
 
-export function MobileBottomNav({ activeId, onNavigate }: MobileBottomNavProps) {
+export function MobileBottomNav({ activeId }: MobileBottomNavProps) {
   return (
     <nav className={styles.nav} aria-label="주요 메뉴">
       <ul className={styles.list}>
@@ -30,27 +29,14 @@ export function MobileBottomNav({ activeId, onNavigate }: MobileBottomNavProps) 
 
           return (
             <li key={item.id} className={styles.item}>
-              {item.routed ? (
-                <Link
-                  href={item.href}
-                  className={className}
-                  aria-current={isActive ? "page" : undefined}
-                  aria-label={label}
-                >
-                  {inner}
-                </Link>
-              ) : (
-                // 아직 페이지가 없다. 링크로 만들면 404 가 되므로 이동시키지 않는다.
-                <button
-                  type="button"
-                  className={className}
-                  aria-current={isActive ? "page" : undefined}
-                  aria-label={label}
-                  onClick={() => onNavigate(item.id)}
-                >
-                  {inner}
-                </button>
-              )}
+              <Link
+                href={item.href}
+                className={className}
+                aria-current={isActive ? "page" : undefined}
+                aria-label={label}
+              >
+                {inner}
+              </Link>
             </li>
           );
         })}

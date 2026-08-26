@@ -38,3 +38,33 @@
   color: var(--text-secondary);
   text-align: center;
 }
+
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.switcher {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  align-items: flex-start;
+}
+
+.linkButton {
+  min-height: var(--touch-target-min);
+  padding: var(--space-2) 0;
+  background: none;
+  border: 0;
+  color: var(--primary);
+  font-size: var(--font-size-caption);
+  text-align: left;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.linkButton:hover {
+  color: var(--primary-hover);
+}

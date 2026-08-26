@@ -1,4 +1,12 @@
 /**
+ * 비밀번호 최소 길이.
+ *
+ * 복잡도 규칙(특수문자 필수 같은 것)을 걸지 않는다. 길이가 훨씬 중요하고,
+ * 지친 사람에게 규칙 퍼즐을 내지 않는 편이 이 제품에 맞다.
+ */
+export const PASSWORD_MIN_LENGTH = 8;
+
+/**
  * 서버 액션이 주고받는 폼 상태.
  *
  * "use server" 파일은 async 함수만 export 할 수 있으므로, 상수와 타입은
@@ -23,3 +31,21 @@ export interface NicknameActionState {
 }
 
 export const NICKNAME_INITIAL_STATE: NicknameActionState = { status: "idle" };
+
+export interface WriteActionState {
+  status: "idle" | "error";
+  message?: string;
+  /** 실패해도 적은 글이 사라지지 않게 되돌려준다. */
+  value?: string;
+}
+
+export const WRITE_INITIAL_STATE: WriteActionState = { status: "idle" };
+
+export interface SettingsActionState {
+  status: "idle" | "success" | "error";
+  /** 어느 폼의 결과인지. 한 화면에 폼이 여럿이라 구분이 필요하다. */
+  field?: "nickname" | "password";
+  message?: string;
+}
+
+export const SETTINGS_INITIAL_STATE: SettingsActionState = { status: "idle" };

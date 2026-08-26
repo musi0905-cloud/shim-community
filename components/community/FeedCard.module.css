@@ -1,0 +1,35 @@
+.head {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.nickname {
+  font-size: var(--font-size-body);
+  font-weight: 500;
+}
+
+.dot { color: var(--text-secondary); }
+
+.state {
+  font-size: var(--font-size-caption);
+  color: var(--primary);
+  background: var(--primary-soft);
+  padding: 2px var(--space-3);
+  border-radius: var(--radius-pill);
+}
+
+.time {
+  margin-left: auto;
+  font-size: var(--font-size-caption);
+  color: var(--text-secondary);
+}
+
+.content {
+  margin: var(--space-4) 0 var(--space-5);
+  font-size: var(--font-size-body);
+  line-height: 1.75;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}

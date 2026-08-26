@@ -1,0 +1,19 @@
+.wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+  padding-block: var(--space-8);
+  text-align: center;
+}
+
+.doneTitle {
+  font-size: var(--font-size-page-title);
+  line-height: var(--line-height-page-title);
+  font-weight: var(--font-weight-page-title);
+}
+
+.doneBody {
+  font-size: var(--font-size-body);
+  color: var(--text-secondary);
+}

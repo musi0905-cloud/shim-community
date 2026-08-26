@@ -8,10 +8,9 @@ import styles from "./DesktopSidebar.module.css";
 
 interface DesktopSidebarProps {
   activeId: NavItemId;
-  onNavigate: (id: NavItemId) => void;
 }
 
-export function DesktopSidebar({ activeId, onNavigate }: DesktopSidebarProps) {
+export function DesktopSidebar({ activeId }: DesktopSidebarProps) {
   return (
     <nav className={styles.sidebar} aria-label="주요 메뉴">
       <div className={styles.brand}>
@@ -36,27 +35,14 @@ export function DesktopSidebar({ activeId, onNavigate }: DesktopSidebarProps) {
 
           return (
             <li key={item.id}>
-              {item.routed ? (
-                <Link
-                  href={item.href}
-                  className={className}
-                  aria-current={isActive ? "page" : undefined}
-                  aria-label={label}
-                >
-                  {inner}
-                </Link>
-              ) : (
-                // 아직 페이지가 없다. 링크로 만들면 404 가 되므로 이동시키지 않는다.
-                <button
-                  type="button"
-                  className={className}
-                  aria-current={isActive ? "page" : undefined}
-                  aria-label={label}
-                  onClick={() => onNavigate(item.id)}
-                >
-                  {inner}
-                </button>
-              )}
+              <Link
+                href={item.href}
+                className={className}
+                aria-current={isActive ? "page" : undefined}
+                aria-label={label}
+              >
+                {inner}
+              </Link>
             </li>
           );
         })}

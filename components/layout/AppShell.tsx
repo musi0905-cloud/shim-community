@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import type { ReactNode } from "react";
 import { usePlatformCapabilities } from "@/lib/usePlatformCapabilities";
 import type { NavItemId } from "@/lib/types";
 import { DesktopSidebar } from "./DesktopSidebar";
@@ -23,16 +23,13 @@ interface AppShellProps {
  * - Desktop(>=1024px): 얇은 좌측 Sidebar
  * - >=1280px: 선택적 우측 Context Panel
  *
- * 실제 route 가 있는 항목(NAV_ITEMS 의 routed: true)만 <Link> 로 이동한다.
- * 나머지 화면은 아직 없어서 링크로 만들면 404 가 되므로, 눌러도 이동하지 않는
- * 버튼으로 두고 active 표시만 로컬에서 바꾼다.
+ * NAV_ITEMS 다섯 항목 모두 실제 route 다. 죽은 링크가 없다.
  */
 export function AppShell({
   children,
   activeId = "home",
   showContextPanel = false,
 }: AppShellProps) {
-  const [pendingId, setPendingId] = useState<NavItemId>(activeId);
   const { isStandalonePWA } = usePlatformCapabilities();
 
   return (
@@ -41,7 +38,7 @@ export function AppShell({
       {/* 다른 탭에서 로그인/로그아웃하면 이 탭도 따라간다. */}
       <SessionSync />
 
-      <DesktopSidebar activeId={pendingId} onNavigate={setPendingId} />
+      <DesktopSidebar activeId={activeId} />
 
       <div className={styles.contentArea}>
         <main className={styles.main} id="main-content">
@@ -50,7 +47,7 @@ export function AppShell({
         {showContextPanel ? <RightContextPanel /> : null}
       </div>
 
-      <MobileBottomNav activeId={pendingId} onNavigate={setPendingId} />
+      <MobileBottomNav activeId={activeId} />
     </div>
   );
 }

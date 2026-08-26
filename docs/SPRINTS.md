@@ -53,35 +53,33 @@ PO-003(Rest Plan + 3영역 렌더링)으로 모두 해소되었다. 상세는 `d
 - [ ] **Vercel 배포 및 실사용 E2E** — 세션에서 `*.vercel.app` / `*.supabase.co`
       접근이 차단되어 사람이 브라우저에서 수행해야 한다
 
-## Sprint 2 — Write & Post 저장
+## Sprint 2 — Complete MVP Activation (코드 완료 / Production 검증 대기)
 
-- `/write` 화면, 상태 선택 → Write 연결
-- `posts` 테이블 + RLS, `MoodStateId` 영속화
-- `NAV_ITEMS` 의 `routed` 를 페이지가 생기는 대로 켠다
+- [x] Auth 를 이메일+비밀번호로 전환 (최초 1회 이메일 인증)
+- [x] 기존 매직링크 사용자 호환 — Settings 에서 비밀번호 설정, 재설정 메일 fallback
+- [x] Home 상태 선택 → `/write` 실제 이동
+- [x] Write → `posts` 실제 저장 (1~200자, 서버 검증, DB constraint)
+- [x] Safety 3단계 분류 + 고위험 안내 화면
+- [x] Rest Plan 저장 + 3영역 렌더링, 제공자 인터페이스 분리
+- [x] 짧은 쉼 3/5/10분, `ends_at` 기준 타이머
+- [x] Community Feed (approved 만, pagination, Infinite Scroll 없음)
+- [x] Reactions 3종 toggle
+- [x] 내 쉼 7일 기록 + 요약
+- [x] Settings 닉네임 변경 / 비밀번호 설정 / 로그아웃
+- [x] 네비게이션 5개 전부 실제 route (dead link 0)
+- [ ] **Production E2E** — 세션에서 Vercel/Supabase 접근이 차단되어 사람이 수행
+- [ ] 계정 삭제 — service_role 이 필요해 보류. 사유와 계획은 ARCHITECTURE 참고
 
-> `docs/PRODUCT.md` §5 Core Flow를 기준으로 진행한다.
-> 공식 디자인이 확정되기 전까지 Home/Write/AI Rest/Feed/My Rest를 임의로 재설계하지 않는다.
-> `prototype.sprint0-reference.html`은 Historical Reference이며 설계 근거로 쓰지 않는다.
+## Sprint 3 이후 (다음 Phase)
 
-## Sprint 3 — AI Rest
+Sprint 2 가 기존 3~6 계획(Write / AI Rest / Timer / Feed / 내 쉼)을 흡수했다.
+남은 것은 아래이며, **이번 Sprint 범위가 아니다.**
 
-- Rest Plan 생성 (Backend structured / Frontend 3영역, PO-003)
-- Safety Flow 분리 (`docs/PRODUCT.md` §13)
-- 대화형 아님. 장시간 대화를 시작하지 않는다.
-
-## Sprint 4 — Rest Timer
-
-- 3 / 5 / 10분. 화면을 보지 않는 것이 정상 상태인 UI
-
-## Sprint 5 — Community Feed
-
-- 같은 상태를 보낸 사람들의 기록
-- 댓글·인기순·Infinite Scroll 없음 (PO-002 영구 금지)
-- 다른 사용자 닉네임 공개 조회용 public-safe view 설계
-
-## Sprint 6 — 내 쉼 / 짧은 쉼
-
-- 지나온 기록, 짧은 쉼 콘텐츠
+- 실제 AI provider 연결 (`RestPlanProvider` 구현 교체)
+- 계정 삭제 (Edge Function + service_role)
+- Premium
+- Geolocation / 장소 추천
+- Web Push
 
 ## Sprint 7 — PWA 완성
 

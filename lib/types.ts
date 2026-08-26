@@ -55,30 +55,80 @@ export type MoodStateId =
 /**
  * Shell 네비게이션 항목.
  *
- * routed 로 갈라 둔다. 아직 페이지가 없는 항목에 href 를 들려 보내면
- * 죽은 링크가 된다. typedRoutes 가 존재하지 않는 route 를 타입 단계에서
- * 거부하므로, 페이지를 만들기 전에는 href 를 가질 수 없게 한다.
+ * href 는 typedRoutes 의 Route 라서 존재하지 않는 경로를 넣을 수 없다.
+ * 즉 여기 항목이 있다는 것은 그 페이지가 실제로 있다는 뜻이다.
  */
-export type NavItem = RoutedNavItem | PlannedNavItem;
-
-interface NavItemBase {
+export interface NavItem {
   id: NavItemId;
   label: string;
-  /** 아이콘 전용 표현이 아닐 때도 스크린리더 문맥을 보강한다. */
+  href: Route;
+  /** 아이콘만으로 부족한 문맥을 스크린리더에 보강한다. */
   description: string;
 }
 
-/** 실제 페이지가 있는 항목. <Link> 로 이동한다. */
-export interface RoutedNavItem extends NavItemBase {
-  routed: true;
-  href: Route;
-}
-
-/** 아직 페이지가 없는 항목. 이동하지 않는다. */
-export interface PlannedNavItem extends NavItemBase {
-  routed: false;
-  /** 페이지가 생기면 쓸 주소. 기록용이며 링크에 쓰지 않는다. */
-  plannedPath: string;
-}
-
 export type NavItemId = "home" | "write" | "shared-day" | "my-rest" | "short-rest";
+
+/** 저장된 한 줄. */
+export interface Post {
+  id: string;
+  user_id: string;
+  state: MoodStateId;
+  content: string;
+  moderation_status: ModerationStatus;
+  created_at: string;
+}
+
+/**
+ * Safety 분류 결과가 글의 공개 범위를 정한다.
+ * approved 만 Community 로 나가고, 나머지도 본인에게는 계속 보인다.
+ */
+export type ModerationStatus = "approved" | "review" | "restricted";
+
+/** Safety 판정. 진단이 아니라 공개 범위와 안내 화면을 고르기 위한 분류다. */
+export type SafetyLevel = "NORMAL" | "REVIEW" | "HIGH_RISK";
+
+export const MODERATION_BY_SAFETY: Record<SafetyLevel, ModerationStatus> = {
+  NORMAL: "approved",
+  REVIEW: "review",
+  HIGH_RISK: "restricted",
+};
+
+/** 저장된 Rest Plan. */
+export interface AiSuggestion {
+  id: string;
+  user_id: string;
+  post_id: string;
+  acknowledgement: string;
+  action_type: string;
+  duration_minutes: RestDuration;
+  instruction: string;
+  closing: string;
+  provider: string;
+  created_at: string;
+}
+
+export type RestDuration = 3 | 5 | 10;
+
+/** 실제 쉼 세션. 남은 시간은 ends_at 기준으로 계산한다. */
+export interface RestSession {
+  id: string;
+  user_id: string;
+  post_id: string | null;
+  duration_minutes: RestDuration;
+  started_at: string;
+  ends_at: string;
+  completed_at: string | null;
+  created_at: string;
+}
+
+export type ReactionType = "heart" | "leaf" | "cup";
+
+/** Community Feed 한 장. public view 가 내보내는 컬럼과 1:1 이다. */
+export interface FeedItem {
+  post_id: string;
+  user_id: string;
+  nickname: string;
+  state: MoodStateId;
+  content: string;
+  created_at: string;
+}

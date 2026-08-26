@@ -217,6 +217,85 @@ interface RestPlan {
 5. **SMTP** — 기본 Supabase 메일 발송은 요율 제한이 낮다. 실사용 전에
    자체 SMTP 를 연결한다.
 
+## 공개 surface — 다른 사람의 닉네임
+
+`profiles` 는 Sprint 1 그대로 **자기 row 만** SELECT 된다. Community 에서 남의
+닉네임이 필요하다고 이 테이블을 열지 않는다.
+
+대신 컬럼을 고정한 view 두 개만 `authenticated` 에 연다.
+
+| view | 내보내는 것 | 내보내지 않는 것 |
+| --- | --- | --- |
+| `community_feed` | post_id, user_id, nickname, state, content, created_at | email, auth metadata, approved 아닌 글 |
+| `post_reaction_counts` | post_id, reaction_type, reaction_count | 누가 눌렀는지 |
+
+view 는 소유자 권한으로 실행되므로 밑단 RLS 를 통과하지만, **나가는 컬럼과
+행이 정의에 박혀 있어** 그 밖으로는 새어나갈 수 없다. `security_invoker` 를
+켜면 이 목적이 깨지므로 일부러 기본값을 쓴다. `anon` 에는 권한을 주지 않는다.
+
+「누가 어떤 반응을 눌렀는지」는 어디에도 공개하지 않는다. 자기 반응만
+`reactions` 에서 직접 읽고, 합계는 view 로만 본다.
+
+## Safety
+
+`lib/rest/safety.ts` 가 글을 세 단계로 분류한다. **진단이 아니다.** 글의 공개
+범위와 다음 화면을 고르기 위한 분류다.
+
+| 분류 | moderation_status | 결과 |
+| --- | --- | --- |
+| NORMAL | `approved` | 정상 게시 + Rest 제안 |
+| REVIEW | `review` | 본인에게만 보임. Community 비공개 |
+| HIGH_RISK | `restricted` | Community 비공개 + `/rest/safety` 안내 우선 |
+
+지금은 규칙 기반이다. 놓치는 표현이 있다는 걸 전제로, 애매하면 REVIEW 쪽으로
+기울여 둔다. AI moderation 으로 바꿀 때는 `classify()` 만 갈아끼우면 된다 —
+호출부는 `SafetyResult` 만 알고 구현을 모른다.
+
+## AI Rest — 제공자 교체 지점
+
+`lib/rest/provider.ts` 의 `RestPlanProvider` 인터페이스가 경계다.
+지금 붙어 있는 것은 규칙 기반(`provider: "rule"`)이고, 상태별로 쉼 하나를
+돌려준다. 실제 모델을 붙일 때는 구현을 하나 더 만들고
+`getRestPlanProvider()` 가 고르게 하면 된다.
+
+**API key 가 없어도 사용자 흐름이 멈추지 않는 것**이 이 구조의 이유다.
+어떤 제공자가 만들었는지는 `ai_suggestions.provider` 에 남으므로 나중에
+과거 기록을 구분할 수 있다.
+
+## 쉼 타이머
+
+남은 시간을 `setTimeout` 으로 누적하지 않는다. 화면이 백그라운드로 가면
+타이머가 느려지거나 멈춘다. `rest_sessions.ends_at` 을 서버가 정하고,
+화면은 매 tick 마다 `ends_at - now` 를 다시 계산한다. 잠갔다 열어도,
+탭을 옮겼다 와도 값이 맞다.
+
+첫 렌더에서는 시간을 계산하지 않는다. 서버가 그린 초와 브라우저가 붙는
+순간의 초가 달라 hydration 이 깨지기 때문이다(React #418). 마운트 후에
+계산을 시작한다.
+
+## 계정 삭제 — 왜 아직 없는가
+
+`auth.users` 의 row 를 지우려면 `service_role` 권한이 필요하다.
+그 키는 RLS 를 전부 우회하므로 이 앱에 두지 않기로 했다
+(`docs/SOURCE-OF-TRUTH.md` 보안 원칙).
+
+안전한 서버 측 admin 경로 없이 "삭제" 버튼을 만들면 실제로는 지워지지 않는
+가짜 삭제가 된다. 그래서 만들지 않았고, 설정 화면에는 **눌리지 않는 「준비 중」
+표시**로 두었다.
+
+붙일 때의 계획:
+
+1. Supabase Edge Function 에 `service_role` 을 두고 삭제를 수행한다.
+   키는 함수 환경에만 있고 앱 번들에는 들어가지 않는다.
+2. 함수는 호출자의 JWT 를 검증해 **자기 계정만** 지우게 한다.
+3. `auth.users` 가 지워지면 `profiles` / `posts` / `ai_suggestions` /
+   `reactions` 는 FK `on delete cascade` 로 함께 사라진다.
+   `rest_sessions.post_id` 만 `on delete set null` 이지만, 그 행 자체도
+   `user_id` cascade 로 지워진다.
+
+즉 **데이터 삭제 경로는 스키마에 이미 준비돼 있고**, 남은 것은 삭제를
+호출할 안전한 위치뿐이다.
+
 ## 이후 Supabase 연결 지점
 
 - `lib/types.ts`의 `MoodStateId`가 저장 key가 된다. UI 문구가 바뀌어도 유지한다.
