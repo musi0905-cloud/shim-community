@@ -89,23 +89,70 @@ function record(name, ok, detail) {
   console.log(`${ok ? "PASS" : "*** FAIL ***"}  ${name}\n        ${detail}`);
 }
 
-// ── 1. 연결 ───────────────────────────────────────────────────────────
+/**
+ * 서버까지 닿지 못한 실패인지 구분한다.
+ *
+ * 이걸 구분하지 않으면 "RLS 가 막았다" 와 "서버에 닿지도 못했다" 가 똑같이
+ * 차단으로 보인다. 네트워크가 끊긴 채로 전부 PASS 가 뜨는 것이 아무 검사도
+ * 하지 않는 것보다 나쁘다 — 검증했다고 착각하게 만들기 때문이다.
+ *
+ * PostgREST 가 돌려주는 거부는 code(42501, PGRST301 …)를 갖는다.
+ * 전송 자체가 실패하면 code 가 없고 메시지가 fetch 실패 계열이다.
+ */
+function isTransportFailure(error) {
+  if (!error) return false;
+  if (error.code) return false; // DB/PostgREST 가 응답한 것 = 서버에 닿았다
+  return /fetch failed|ENOTFOUND|ECONNREFUSED|ETIMEDOUT|allowlist|network|socket|EAI_AGAIN|certificate/i.test(
+    `${error.message ?? ""} ${error.details ?? ""}`,
+  );
+}
+
+// ── 1. 연결 확인 (preflight) ──────────────────────────────────────────
 console.log(`\n대상: ${URL_}\n`);
 
 const anon = client();
 
 {
+  // 어떤 검사보다 먼저, 실제 검사와 똑같은 경로로 서버에 닿는지 확인한다.
+  //
+  // 여기서 별도의 fetch 를 쓰면 안 된다. Node 내장 fetch 는 HTTPS_PROXY 를
+  // 읽지 않아서 supabase-js 와 다른 경로로 나가고, 프록시가 돌려준 403 같은
+  // 응답을 "연결됨" 으로 착각하게 된다. 실제로 그렇게 오판했다.
+  // 그래서 supabase-js 클라이언트로 직접 찔러 본다.
+  const { error } = await anon.from("profiles").select("user_id").limit(1);
+
+  if (isTransportFailure(error)) {
+    console.error(
+      `*** 중단 ***  Supabase 에 연결할 수 없다.\n        ${error.message}\n\n` +
+        "서버에 닿지 못한 상태에서는 어떤 것도 검증할 수 없다.\n" +
+        "네트워크가 열린 곳에서 실행하거나, egress 설정에 이 호스트를 추가해라.\n" +
+        "이 상태를 PASS 로 보고하지 않는다.",
+    );
+    process.exit(3);
+  }
+  record(
+    "Supabase 연결",
+    true,
+    error ? `응답함 (${error.code})` : "응답함 (쿼리 성공)",
+  );
+}
+
+{
   // 비로그인으로 profiles 를 읽으면 막혀야 한다.
   // RLS 가 꺼져 있거나 anon 정책이 열려 있으면 여기서 행이 돌아온다.
   const { data, error } = await anon.from("profiles").select("user_id").limit(1);
-  const blocked = error !== null || (data ?? []).length === 0;
-  record(
-    "비로그인 SELECT 차단",
-    blocked,
-    error
-      ? `차단됨 (${error.code ?? "?"}: ${error.message})`
-      : `행 ${(data ?? []).length}개 반환 — 0이어야 안전`,
-  );
+  if (isTransportFailure(error)) {
+    record("비로그인 SELECT 차단", false, `검증 불가 — 서버에 닿지 못함: ${error.message}`);
+  } else {
+    const blocked = error !== null || (data ?? []).length === 0;
+    record(
+      "비로그인 SELECT 차단",
+      blocked,
+      error
+        ? `차단됨 (${error.code}: ${error.message})`
+        : `행 ${(data ?? []).length}개 반환 — 0이어야 안전`,
+    );
+  }
 }
 
 {
@@ -113,11 +160,15 @@ const anon = client();
   const { error } = await anon
     .from("profiles")
     .insert({ user_id: "00000000-0000-0000-0000-000000000000", nickname: "침입" });
-  record(
-    "비로그인 INSERT 차단",
-    error !== null,
-    error ? `차단됨 (${error.code ?? "?"})` : "삽입이 성공했다 — 심각",
-  );
+  if (isTransportFailure(error)) {
+    record("비로그인 INSERT 차단", false, `검증 불가 — 서버에 닿지 못함: ${error.message}`);
+  } else {
+    record(
+      "비로그인 INSERT 차단",
+      error !== null,
+      error ? `차단됨 (${error.code})` : "삽입이 성공했다 — 심각",
+    );
+  }
 }
 
 // ── 2. 사용자 간 RLS ──────────────────────────────────────────────────
@@ -199,8 +250,12 @@ if (!JWT_A || !JWT_B) {
       .insert({ user_id: idB, nickname: "가짜" });
     record(
       "A: B 의 user_id 로 INSERT 불가",
-      error !== null,
-      error ? `차단됨 (${error.code}: ${error.message})` : "삽입 성공 — 심각",
+      error !== null && !isTransportFailure(error),
+      isTransportFailure(error)
+        ? `검증 불가 — 서버에 닿지 못함: ${error.message}`
+        : error
+          ? `차단됨 (${error.code}: ${error.message})`
+          : "삽입 성공 — 심각",
     );
   }
 
@@ -212,8 +267,14 @@ if (!JWT_A || !JWT_B) {
       .select("user_id");
     record(
       "A: 자기 row 의 user_id 를 B 로 바꿔치기 불가",
-      error !== null || (data ?? []).length === 0,
-      error ? `차단됨 (${error.code})` : `${(data ?? []).length}행 — 0이어야 정상`,
+      isTransportFailure(error)
+        ? false
+        : error !== null || (data ?? []).length === 0,
+      isTransportFailure(error)
+        ? `검증 불가 — 서버에 닿지 못함: ${error.message}`
+        : error
+          ? `차단됨 (${error.code})`
+          : `${(data ?? []).length}행 — 0이어야 정상`,
     );
   }
 
@@ -248,8 +309,12 @@ if (!JWT_A || !JWT_B) {
       .eq("user_id", idA);
     record(
       "닉네임 1자 → DB check constraint 차단",
-      error !== null,
-      error ? `차단됨 (${error.code})` : "통과됨 — constraint 누락",
+      error !== null && !isTransportFailure(error),
+      isTransportFailure(error)
+        ? `검증 불가 — 서버에 닿지 못함: ${error.message}`
+        : error
+          ? `차단됨 (${error.code})`
+          : "통과됨 — constraint 누락",
     );
   }
 
@@ -260,8 +325,12 @@ if (!JWT_A || !JWT_B) {
       .eq("user_id", idA);
     record(
       "닉네임 앞뒤 공백 → DB check constraint 차단",
-      error !== null,
-      error ? `차단됨 (${error.code})` : "통과됨 — constraint 누락",
+      error !== null && !isTransportFailure(error),
+      isTransportFailure(error)
+        ? `검증 불가 — 서버에 닿지 못함: ${error.message}`
+        : error
+          ? `차단됨 (${error.code})`
+          : "통과됨 — constraint 누락",
     );
   }
 }
