@@ -32,14 +32,14 @@
 .button:disabled {
   background: var(--surface-soft);
   color: var(--text-secondary);
-  border-color: var(--border);
+  border-color: var(--border-control);
   cursor: not-allowed;
 }
 
 .quiet {
   background: transparent;
   color: var(--primary);
-  border-color: var(--border-strong);
+  border-color: var(--border-control-strong);
 }
 
 .quiet:hover:not(:disabled),

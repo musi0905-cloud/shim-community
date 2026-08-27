@@ -8,7 +8,9 @@ import { getSiteUrl } from "@/lib/supabase/env";
 import {
   PASSWORD_MIN_LENGTH,
   type AuthActionState,
+  type AuthField,
 } from "@/lib/auth/form-state";
+import { authErrorForLog, classifyAuthFailure } from "@/lib/auth/auth-error";
 
 /**
  * 이 요청이 실제로 도착한 주소를 알아낸다.
@@ -38,22 +40,49 @@ async function confirmUrl(): Promise<string> {
   return `${getSiteUrl(resolveOrigin(headerList))}/auth/confirm`;
 }
 
+/**
+ * 우리 쪽 문제일 때 쓰는 문구.
+ *
+ * 사용자가 입력을 고쳐서 해결할 수 있는 일이 아니므로, 입력을 의심하게
+ * 만드는 문구를 쓰지 않는다. raw Supabase 오류는 절대 넣지 않는다.
+ */
+const TRANSPORT_MESSAGE: Record<"signin" | "signup" | "reset", string> = {
+  signin: "로그인 처리 중 문제가 발생했어요. 잠시 후 다시 시도해주세요.",
+  signup: "가입 처리 중 문제가 발생했어요. 잠시 후 다시 시도해주세요.",
+  reset: "메일을 보내는 중 문제가 발생했어요. 잠시 후 다시 시도해주세요.",
+};
+
+const RATE_LIMIT_MESSAGE = "잠시 후에 다시 시도해주세요.";
+
 /** 브라우저의 type="email" 검증은 우회할 수 있으므로 서버에서 다시 본다. */
 function isValidEmail(value: string): boolean {
   if (value.length === 0 || value.length > 254) return false;
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 }
 
-function passwordProblem(password: string, confirm?: string): string | null {
+interface FieldProblem {
+  field: AuthField;
+  message: string;
+}
+
+/** 어느 칸의 문제인지까지 함께 돌려준다. 문구만 돌려주면 붙일 곳을 알 수 없다. */
+function passwordProblem(password: string, confirm?: string): FieldProblem | null {
   if (password.length < PASSWORD_MIN_LENGTH) {
-    return `비밀번호는 ${PASSWORD_MIN_LENGTH}자 이상으로 만들어주세요.`;
+    return {
+      field: "password",
+      message: `비밀번호는 ${PASSWORD_MIN_LENGTH}자 이상으로 만들어주세요.`,
+    };
   }
   if (password.length > 72) {
     // bcrypt 가 72 바이트에서 잘린다. 잘린 채로 저장되면 나중에 혼란스럽다.
-    return "비밀번호가 너무 길어요. 72자 이하로 만들어주세요.";
+    return {
+      field: "password",
+      message: "비밀번호가 너무 길어요. 72자 이하로 만들어주세요.",
+    };
   }
   if (confirm !== undefined && password !== confirm) {
-    return "비밀번호가 서로 달라요.";
+    // 고쳐야 할 칸은 확인 쪽이다.
+    return { field: "passwordConfirm", message: "비밀번호가 서로 달라요." };
   }
   return null;
 }
@@ -82,10 +111,17 @@ export async function signUpWithPassword(
   const { email, password, passwordConfirm } = readForm(formData);
 
   if (!isValidEmail(email)) {
-    return { status: "error", message: "이메일 주소를 다시 확인해주세요.", email };
+    return {
+      status: "error",
+      field: "email",
+      message: "이메일 주소를 다시 확인해주세요.",
+      email,
+    };
   }
   const problem = passwordProblem(password, passwordConfirm);
-  if (problem) return { status: "error", message: problem, email };
+  if (problem) {
+    return { status: "error", field: problem.field, message: problem.message, email };
+  }
 
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signUp({
@@ -95,15 +131,13 @@ export async function signUpWithPassword(
   });
 
   if (error) {
-    console.error("[auth] 가입 실패", { status: error.status, message: error.message });
-    if (error.status === 429) {
-      return { status: "error", message: "잠시 후에 다시 시도해주세요.", email };
+    const kind = classifyAuthFailure(error);
+    console.error("[auth] 가입 실패", authErrorForLog(error));
+
+    if (kind === "rate_limited") {
+      return { status: "error", message: RATE_LIMIT_MESSAGE, email };
     }
-    return {
-      status: "error",
-      message: "가입하지 못했어요. 잠시 후 다시 시도해주세요.",
-      email,
-    };
+    return { status: "error", message: TRANSPORT_MESSAGE.signup, email };
   }
 
   // 이미 가입된 주소여도 Supabase 는 성공처럼 응답한다(사용자 열거 방지).
@@ -127,31 +161,57 @@ export async function signInWithPassword(
 ): Promise<AuthActionState> {
   const { email, password } = readForm(formData);
 
-  if (!isValidEmail(email) || password.length === 0) {
-    return { status: "error", message: "이메일과 비밀번호를 확인해주세요.", email };
+  if (!isValidEmail(email)) {
+    return {
+      status: "error",
+      field: "email",
+      message: "이메일 주소를 다시 확인해주세요.",
+      email,
+    };
+  }
+  if (password.length === 0) {
+    return {
+      status: "error",
+      field: "password",
+      message: "비밀번호를 입력해주세요.",
+      email,
+    };
   }
 
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword({ email, password });
 
   if (error) {
-    console.error("[auth] 로그인 실패", { status: error.status, code: error.code });
+    const kind = classifyAuthFailure(error);
+    console.error("[auth] 로그인 실패", authErrorForLog(error));
 
-    // 아직 이메일을 확인하지 않은 계정만 따로 안내한다. 사용자가 할 일이 다르다.
-    if (error.code === "email_not_confirmed") {
-      return {
-        status: "error",
-        message: "메일함에서 인증 링크를 먼저 눌러주세요.",
-        email,
-      };
+    switch (kind) {
+      // Supabase 에 닿지 못했거나 서버가 5xx 를 줬다. 사용자 입력 문제가
+      // 아니므로 비밀번호를 의심하게 만들지 않는다. (QA-019 / 204 / 209)
+      case "transport":
+      case "unknown":
+        return { status: "error", message: TRANSPORT_MESSAGE.signin, email };
+
+      case "rate_limited":
+        return { status: "error", message: RATE_LIMIT_MESSAGE, email };
+
+      // 아직 이메일을 확인하지 않은 계정만 따로 안내한다. 사용자가 할 일이 다르다.
+      case "account_state":
+        return {
+          status: "error",
+          message: "메일함에서 인증 링크를 먼저 눌러주세요.",
+          email,
+        };
+
+      // "비밀번호가 틀렸다" 와 "그런 계정이 없다" 는 계속 구분하지 않는다.
+      // 구분하면 어떤 주소가 가입돼 있는지 알려주는 것과 같다.
+      case "credentials":
+        return {
+          status: "error",
+          message: "이메일 또는 비밀번호를 확인해주세요.",
+          email,
+        };
     }
-    // 그 외에는 "비밀번호가 틀렸다" 와 "그런 계정이 없다" 를 구분하지 않는다.
-    // 구분하면 어떤 주소가 가입돼 있는지 알려주는 것과 같다.
-    return {
-      status: "error",
-      message: "이메일 또는 비밀번호가 맞지 않아요.",
-      email,
-    };
   }
 
   revalidatePath("/", "layout");
@@ -171,7 +231,12 @@ export async function sendPasswordReset(
   const { email } = readForm(formData);
 
   if (!isValidEmail(email)) {
-    return { status: "error", message: "이메일 주소를 다시 확인해주세요.", email };
+    return {
+      status: "error",
+      field: "email",
+      message: "이메일 주소를 다시 확인해주세요.",
+      email,
+    };
   }
 
   const headerList = await headers();
@@ -184,15 +249,20 @@ export async function sendPasswordReset(
   });
 
   if (error) {
-    console.error("[auth] 재설정 메일 실패", {
-      status: error.status,
-      message: error.message,
-    });
-    if (error.status === 429) {
-      return { status: "error", message: "잠시 후에 다시 시도해주세요.", email };
+    const kind = classifyAuthFailure(error);
+    console.error("[auth] 재설정 메일 실패", authErrorForLog(error));
+
+    if (kind === "rate_limited") {
+      return { status: "error", message: RATE_LIMIT_MESSAGE, email };
+    }
+    // 우리 쪽 장애는 알린다. 이건 그 주소가 가입돼 있는지와 무관한 사실이라
+    // 알려 줘도 계정 열거로 이어지지 않는다. 반대로 숨기면 메일이 오지 않는
+    // 이유를 사용자가 영원히 알 수 없다.
+    if (kind === "transport" || kind === "unknown") {
+      return { status: "error", message: TRANSPORT_MESSAGE.reset, email };
     }
   }
 
-  // 성공·실패를 구분해 알리지 않는다. 가입 여부가 드러나기 때문이다.
+  // 그 밖에는 성공·실패를 구분해 알리지 않는다. 가입 여부가 드러나기 때문이다.
   return { status: "sent", email };
 }

@@ -13,8 +13,23 @@ export const PASSWORD_MIN_LENGTH = 8;
  * 여기에 둔다. 클라이언트 컴포넌트도 이 파일에서 초기값을 가져간다.
  */
 
+/**
+ * 어느 입력의 문제인지.
+ *
+ * 예전에는 이 구분이 없어서 모든 오류 문구가 email 입력에 붙었다.
+ * "비밀번호가 서로 달라요" 가 이메일 칸의 오류로 announce 돼, 스크린리더
+ * 사용자는 어느 칸을 고쳐야 하는지 알 수 없었다. (QA-232 / QA-233)
+ *
+ * undefined 는 "특정 입력의 문제가 아님" 을 뜻한다 — 이때는 폼 전체 오류로
+ * 보여준다. 로그인 실패("이메일 또는 비밀번호를 확인해주세요")처럼 둘 중
+ * 어느 쪽인지 알려주면 안 되는 경우가 여기 해당한다.
+ */
+export type AuthField = "email" | "password" | "passwordConfirm";
+
 export interface AuthActionState {
   status: "idle" | "sent" | "error";
+  /** 오류가 가리키는 입력. 없으면 폼 전체 오류. */
+  field?: AuthField;
   /** 사용자에게 보여줄 문구. Supabase 원문 에러를 그대로 쓰지 않는다. */
   message?: string;
   /** 안내 문구에 다시 보여주기 위한 값. */

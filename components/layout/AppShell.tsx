@@ -41,7 +41,7 @@ export function AppShell({
       <DesktopSidebar activeId={activeId} />
 
       <div className={styles.contentArea}>
-        <main className={styles.main} id="main-content">
+        <main className={styles.main} id="main-content" tabIndex={-1}>
           {children}
         </main>
         {showContextPanel ? <RightContextPanel /> : null}

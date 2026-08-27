@@ -14,11 +14,16 @@ import styles from "./Landing.module.css";
  * ("도파민보다, 쉼.")는 이 화면에서만 쓴다. 앱 안쪽 화면마다 반복하지 않는다.
  *
  * 서비스를 길게 설명하지 않는다. 지친 사람에게 읽을거리를 더 주지 않는다.
+ *
+ * 이 화면은 AppShell 도 AuthShell 도 쓰지 않는다. 그래서 <main> 을 여기서
+ * 직접 둔다. 예전에는 이 화면에만 main 랜드마크가 없어서, layout 이 모든
+ * 페이지에 깔아 두는 skip link 가 갈 곳 없는 링크가 됐다 — 모든 신규
+ * 사용자가 처음 보는 화면에서. (QA-237)
  */
 export function Landing() {
   return (
     <div className={styles.landing}>
-      <div className={styles.panel}>
+      <main id="main-content" tabIndex={-1} className={styles.panel}>
         {/*
           워드마크가 크게 들어가므로 원형 마크를 따로 두지 않는다.
           같은 글자를 두 번 보여주게 된다.
@@ -47,7 +52,7 @@ export function Landing() {
             이메일만 있으면 돼요. 현실의 이름은 묻지 않아요.
           </p>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

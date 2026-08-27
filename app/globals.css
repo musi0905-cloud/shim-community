@@ -20,6 +20,22 @@
 
   /* 위 조합은 모두 WCAG AA(4.5:1) 이상을 만족한다. */
   --border-strong: #cfcabd;
+
+  /*
+    조작할 수 있는 요소의 경계선.
+
+    --border 는 카드 테두리·구분선처럼 "있어도 되고 없어도 되는" 선을 위한
+    값이라 아주 연하다(surface 대비 1.33:1). 그 값을 입력칸과 버튼에도 쓰다
+    보니, 흰 카드 위 흰 입력칸의 유일한 경계가 1.33:1 이 되어 저시력 사용자가
+    입력칸의 위치와 범위를 알아보기 어려웠다. (QA-235)
+
+    WCAG 2.1 SC 1.4.11 은 UI 컴포넌트의 경계에 3:1 을 요구한다. 그래서 장식용
+    선과 조작용 경계를 토큰부터 나눈다. 아래 값은 surface(#ffffff) 3.57:1,
+    background(#f7f5f1) 3.28:1, surface-soft(#efede6) 3.05:1 로 세 바탕 모두에서
+    기준을 넘기면서, 폼을 진하게 만들지 않는 가장 연한 색이다.
+  */
+  --border-control: #8d8779;
+  --border-control-strong: #6e6a5d;
   --overlay-press: rgba(43, 48, 46, 0.04);
   --focus-ring: var(--primary);
 
@@ -212,4 +228,19 @@ ul {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/*
+  skip link 로 건너뛴 뒤 포커스가 실제로 본문에 놓이게 하려고 main 에
+  tabindex="-1" 을 준다. 다만 마우스로 눌렀을 때까지 테두리가 보이면
+  어색하므로, 키보드로 이동한 경우에만 표시한다.
+*/
+main:focus {
+  outline: none;
+}
+
+main:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 4px;
+  border-radius: var(--radius-md);
 }

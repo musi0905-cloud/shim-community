@@ -7,8 +7,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "typecheck": "tsc --noEmit",
-    "verify:supabase": "node scripts/verify-supabase.mjs"
+    "typecheck": "tsc --noEmit && tsc -p tsconfig.tests.json",
+    "verify:supabase": "node scripts/verify-supabase.mjs",
+    "test": "node --experimental-strip-types --test \"tests/*.test.ts\""
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.5",

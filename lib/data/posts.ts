@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { classify } from "@/lib/rest/safety";
 import { getRestPlanProvider } from "@/lib/rest/provider";
 import { MODERATION_BY_SAFETY } from "@/lib/types";
+import type { FeedCursor } from "@/lib/community/cursor";
 import type {
   AiSuggestion,
   FeedItem,
@@ -219,32 +220,73 @@ export interface FeedPage {
   items: FeedItem[];
   /** 다음 장이 더 있는가. Infinite Scroll 대신 "조금 더 보기" 로 쓴다. */
   hasMore: boolean;
+  /** 앞 장이 있는가. */
+  hasPrevious: boolean;
+  /** "조금 더 보기" 가 쓸 커서. */
+  nextCursor: FeedCursor | null;
+  /** "이전" 이 쓸 커서. */
+  previousCursor: FeedCursor | null;
 }
 
 /**
- * Community Feed.
+ * Community Feed 한 장.
  *
- * posts 테이블이 아니라 community_feed view 에서 읽는다. view 가 approved 만,
- * 그리고 정해진 컬럼만 내보낸다. email 은 애초에 나올 수 없다.
+ * posts 테이블이 아니라 community_feed 를 읽는다 — approved 만, 정해진 컬럼만
+ * 나간다. email 은 애초에 나올 수 없다.
+ *
+ * offset(range) 이 아니라 (created_at, post_id) keyset 으로 넘긴다.
+ * offset 은 페이지 사이에 글이 들어오면 중복·누락이 생긴다. (QA-265)
+ * 실제 keyset 쿼리는 community_feed_page 함수에 있다 — 정렬과 커서 비교를
+ * 한 곳에 모아 두려고 SQL 쪽에 뒀다.
+ *
+ * @param cursor    이 글 다음(또는 이전)부터. null 이면 첫 장.
+ * @param backward  true 면 커서보다 위쪽(더 최신) 방향으로 한 장.
  */
-export async function getFeed(page: number, pageSize: number): Promise<FeedPage> {
-  const from = page * pageSize;
+export async function getFeed(
+  cursor: FeedCursor | null,
+  backward: boolean,
+  pageSize: number,
+): Promise<FeedPage> {
   const supabase = await createClient();
 
-  // 한 개 더 받아서 다음 장이 있는지 본다. count 쿼리를 따로 치지 않는다.
-  const { data, error } = await supabase
-    .from("community_feed")
-    .select("post_id, user_id, nickname, state, content, created_at")
-    .order("created_at", { ascending: false })
-    .range(from, from + pageSize);
+  // 한 개 더 받아서 그 방향에 더 있는지 본다. count 쿼리를 따로 치지 않는다.
+  const { data, error } = await supabase.rpc("community_feed_page", {
+    p_limit: pageSize + 1,
+    p_cursor_created_at: cursor?.createdAt ?? null,
+    p_cursor_post_id: cursor?.postId ?? null,
+    p_backward: backward,
+  });
 
   if (error) {
     console.error("[community] feed 조회 실패", { code: error.code });
     throw new Error("FEED_FETCH_FAILED");
   }
 
-  const rows = data ?? [];
-  return { items: rows.slice(0, pageSize), hasMore: rows.length > pageSize };
+  const rows = (data ?? []) as FeedItem[];
+  const overflow = rows.length > pageSize;
+
+  // 앞으로 갈 때는 남는 한 건이 목록 끝에, 뒤로 갈 때는 앞에 붙는다.
+  // 두 방향 모두 결과는 최신순으로 정렬돼 오기 때문이다.
+  const items = overflow
+    ? backward
+      ? rows.slice(1)
+      : rows.slice(0, pageSize)
+    : rows;
+
+  const first = items[0];
+  const last = items[items.length - 1];
+
+  return {
+    items,
+    // 뒤로 온 경우엔 방금 떠나온 곳이 아래에 있으니 다음 장은 반드시 있다.
+    hasMore: backward ? true : overflow,
+    // 앞으로 온 경우엔 커서가 있었다는 것 자체가 위에 뭔가 있다는 뜻이다.
+    hasPrevious: backward ? overflow : cursor !== null,
+    nextCursor: last ? { createdAt: last.created_at, postId: last.post_id } : null,
+    previousCursor: first
+      ? { createdAt: first.created_at, postId: first.post_id }
+      : null,
+  };
 }
 
 export type ReactionCounts = Record<ReactionType, number>;

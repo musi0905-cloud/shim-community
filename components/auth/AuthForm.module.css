@@ -68,3 +68,19 @@
 .linkButton:hover {
   color: var(--primary-hover);
 }
+
+/*
+  어느 입력의 문제인지 지목할 수 없는 오류.
+  특정 칸에 붙이면 그 칸이 틀렸다고 잘못 알려주게 된다. (QA-232 / QA-233)
+  색만으로 알리지 않도록 왼쪽 선을 함께 둔다.
+*/
+.formError {
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  border-left: 3px solid var(--danger);
+  border-radius: var(--radius-sm);
+  background: var(--surface-soft);
+  color: var(--danger);
+  font-size: var(--font-size-caption);
+  line-height: var(--line-height-caption);
+}

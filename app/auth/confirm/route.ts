@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import type { EmailOtpType } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
+import { safeRedirectPath } from "@/lib/auth/safe-redirect";
 
 /**
  * 인증 메일의 링크가 돌아오는 곳.
@@ -20,9 +21,9 @@ export async function GET(request: NextRequest) {
   const type = searchParams.get("type") as EmailOtpType | null;
   const code = searchParams.get("code");
 
-  // 열린 리다이렉트를 만들지 않는다. 같은 사이트의 경로만 허용한다.
-  const rawNext = searchParams.get("next") ?? "/";
-  const next = rawNext.startsWith("/") && !rawNext.startsWith("//") ? rawNext : "/";
+  // 열린 리다이렉트를 만들지 않는다.
+  // 접두사 검사로는 부족하다 — 자세한 이유는 safeRedirectPath 주석 참고.
+  const next = safeRedirectPath(searchParams.get("next"), origin);
 
   const supabase = await createClient();
 

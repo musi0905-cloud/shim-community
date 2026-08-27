@@ -14,6 +14,7 @@ import {
   AUTH_INITIAL_STATE,
   PASSWORD_MIN_LENGTH,
   type AuthActionState,
+  type AuthField,
 } from "@/lib/auth/form-state";
 import styles from "./AuthForm.module.css";
 
@@ -49,13 +50,39 @@ function SubmitButton({ mode }: { mode: Mode }) {
  *
  * 화면을 나누면 지친 사람에게 이동이 하나 더 생긴다. 대신 어떤 모드인지
  * 항상 분명히 보이게 한다.
+ *
+ * 모드를 바꾸면 Fields 가 통째로 다시 마운트된다(key={mode}). 이전 모드에서
+ * 난 오류가 다음 모드 화면에 남아 있지 않게 하려는 것이다.
  */
 export function AuthForm() {
   const [mode, setMode] = useState<Mode>("signin");
+  return <AuthFormFields key={mode} mode={mode} onModeChange={setMode} />;
+}
+
+function AuthFormFields({
+  mode,
+  onModeChange,
+}: {
+  mode: Mode;
+  onModeChange: (next: Mode) => void;
+}) {
   const [state, formAction] = useActionState<AuthActionState, FormData>(
     ACTION[mode],
     AUTH_INITIAL_STATE,
   );
+
+  /**
+   * 이 칸의 오류인가.
+   *
+   * 오류 문구는 그 문구가 가리키는 입력에만 붙인다. 예전에는 전부 email 에
+   * 붙어서, 비밀번호 오류가 이메일 칸의 오류로 announce 됐다. (QA-232 / 233)
+   */
+  const errorFor = (field: AuthField): string | undefined =>
+    state.status === "error" && state.field === field ? state.message : undefined;
+
+  /** 특정 칸을 지목할 수 없는 오류. 폼 전체 오류로 따로 보여준다. */
+  const formError =
+    state.status === "error" && state.field === undefined ? state.message : undefined;
 
   if (state.status === "sent") {
     return (
@@ -76,7 +103,7 @@ export function AuthForm() {
 
   return (
     <div className={styles.wrap}>
-      <form action={formAction} className={styles.form} key={mode}>
+      <form action={formAction} className={styles.form}>
         <TextField
           id="email"
           name="email"
@@ -86,7 +113,7 @@ export function AuthForm() {
           autoComplete="email"
           required
           defaultValue={state.email}
-          errorMessage={state.status === "error" ? state.message : undefined}
+          errorMessage={errorFor("email")}
         />
 
         {mode !== "reset" ? (
@@ -103,6 +130,7 @@ export function AuthForm() {
                 ? `${PASSWORD_MIN_LENGTH}자 이상이면 돼요.`
                 : undefined
             }
+            errorMessage={errorFor("password")}
           />
         ) : null}
 
@@ -115,7 +143,19 @@ export function AuthForm() {
             autoComplete="new-password"
             required
             minLength={PASSWORD_MIN_LENGTH}
+            errorMessage={errorFor("passwordConfirm")}
           />
+        ) : null}
+
+        {/*
+          어느 칸인지 지목할 수 없는 오류가 오는 자리.
+          로그인 실패는 "이메일이 틀렸다" 와 "비밀번호가 틀렸다" 를 구분해
+          알려주면 안 되므로(계정 열거) 여기로 온다. 우리 쪽 장애도 마찬가지다.
+        */}
+        {formError ? (
+          <p className={styles.formError} role="alert">
+            {formError}
+          </p>
         ) : null}
 
         <SubmitButton mode={mode} />
@@ -127,14 +167,14 @@ export function AuthForm() {
             <button
               type="button"
               className={styles.linkButton}
-              onClick={() => setMode("signup")}
+              onClick={() => onModeChange("signup")}
             >
               처음이신가요? 가입하기
             </button>
             <button
               type="button"
               className={styles.linkButton}
-              onClick={() => setMode("reset")}
+              onClick={() => onModeChange("reset")}
             >
               비밀번호를 아직 만들지 않았나요?
             </button>
@@ -143,7 +183,7 @@ export function AuthForm() {
           <button
             type="button"
             className={styles.linkButton}
-            onClick={() => setMode("signin")}
+            onClick={() => onModeChange("signin")}
           >
             이미 계정이 있어요. 로그인하기
           </button>

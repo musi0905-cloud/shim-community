@@ -6,6 +6,7 @@ import { FeedCard } from "@/components/community/FeedCard";
 import { requireProfile } from "@/lib/auth/dal";
 import { getFeed, getMyReactions, getReactionCounts } from "@/lib/data/posts";
 import { FEED_PAGE_SIZE } from "@/lib/constants";
+import { decodeFeedCursor, encodeFeedCursor } from "@/lib/community/cursor";
 import type { ReactionType } from "@/lib/types";
 import styles from "./page.module.css";
 
@@ -16,16 +17,20 @@ const EMPTY_COUNTS: Record<ReactionType, number> = { heart: 0, leaf: 0, cup: 0 }
 export default async function CommunityPage({
   searchParams,
 }: {
-  searchParams: Promise<{ page?: string }>;
+  searchParams: Promise<{ after?: string; before?: string }>;
 }) {
   await requireProfile();
 
-  const { page: rawPage } = await searchParams;
-  const parsed = Number(rawPage ?? "0");
-  // 음수나 이상한 값이 와도 첫 장으로 되돌린다.
-  const page = Number.isInteger(parsed) && parsed >= 0 ? parsed : 0;
+  const { after, before } = await searchParams;
 
-  const { items, hasMore } = await getFeed(page, FEED_PAGE_SIZE);
+  // 커서는 URL 에서 온다. 형식이 이상하면 조용히 첫 장으로 돌아간다.
+  const backwardCursor = decodeFeedCursor(before);
+  const forwardCursor = decodeFeedCursor(after);
+  const backward = backwardCursor !== null;
+  const cursor = backwardCursor ?? forwardCursor;
+
+  const { items, hasMore, hasPrevious, nextCursor, previousCursor } =
+    await getFeed(cursor, backward, FEED_PAGE_SIZE);
   const postIds = items.map((i) => i.post_id);
   const [counts, mine] = await Promise.all([
     getReactionCounts(postIds),
@@ -45,7 +50,7 @@ export default async function CommunityPage({
         {items.length === 0 ? (
           <SurfaceCard tone="soft" padding="roomy">
             <p className={styles.empty}>
-              {page === 0
+              {cursor === null
                 ? "아직 올라온 글이 없어요. 오늘의 첫 한 줄을 남겨보실래요?"
                 : "더 이상 글이 없어요."}
             </p>
@@ -65,13 +70,19 @@ export default async function CommunityPage({
 
         {/* Infinite Scroll 을 쓰지 않는다. 멈출 지점을 사용자가 정한다. */}
         <nav className={styles.pager} aria-label="페이지 이동">
-          {page > 0 ? (
-            <ButtonLink href={`/community?page=${page - 1}`} variant="quiet">
+          {hasPrevious && previousCursor ? (
+            <ButtonLink
+              href={`/community?before=${encodeFeedCursor(previousCursor)}`}
+              variant="quiet"
+            >
               이전
             </ButtonLink>
           ) : null}
-          {hasMore ? (
-            <ButtonLink href={`/community?page=${page + 1}`} variant="quiet">
+          {hasMore && nextCursor ? (
+            <ButtonLink
+              href={`/community?after=${encodeFeedCursor(nextCursor)}`}
+              variant="quiet"
+            >
               조금 더 보기
             </ButtonLink>
           ) : null}
