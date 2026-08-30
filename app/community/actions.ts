@@ -3,12 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { requireProfile } from "@/lib/auth/dal";
 import { createClient } from "@/lib/supabase/server";
-import { REACTIONS } from "@/lib/constants";
+import { isReactionType } from "@/lib/community/reaction-type";
 import type { ReactionType } from "@/lib/types";
-
-function isReactionType(value: unknown): value is ReactionType {
-  return typeof value === "string" && REACTIONS.some((r) => r.type === value);
-}
 
 /**
  * 반응 toggle.
@@ -16,14 +12,20 @@ function isReactionType(value: unknown): value is ReactionType {
  * 이미 눌렀으면 지우고, 아니면 추가한다. unique(post_id,user_id,reaction_type)
  * 가 중복을 막으므로 경쟁 상태에서도 두 개가 생기지 않는다.
  * user_id 는 세션에서 가져온다. 폼 값을 믿지 않는다.
+ *
+ * postId/reactionType 은 formData 가 아니라 버튼의 formAction 에 .bind() 로
+ * 실어 온다 — 같은 액션을 공유하는 여러 버튼 각각에 다른 값을 넘기는
+ * Next.js 의 방식이다. 그래도 둘 다 클라이언트가 준 값이므로 그대로
+ * 믿지 않고 여기서 다시 검증한다.
  */
-export async function toggleReaction(formData: FormData) {
+export async function toggleReaction(
+  postId: string,
+  reactionType: ReactionType,
+  _formData: FormData,
+) {
   const profile = await requireProfile();
 
-  const postId = formData.get("postId");
-  const reactionType = formData.get("reactionType");
-
-  if (typeof postId !== "string" || !isReactionType(reactionType)) {
+  if (typeof postId !== "string" || postId.length === 0 || !isReactionType(reactionType)) {
     return;
   }
 
