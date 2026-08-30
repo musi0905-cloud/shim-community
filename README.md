@@ -125,7 +125,10 @@ npm run verify:supabase -- --jwt-a <A토큰> --jwt-b <B토큰>   # 사용자 간
 
 ## 인증
 
-Email Magic Link 방식이다. 비밀번호가 없다.
+이메일 + 비밀번호 방식이다(Sprint 2, 최초 1회 이메일 인증). Sprint 1 의
+매직 링크 사용자도 `/settings` 에서 비밀번호를 설정하면 계속 로그인할 수
+있다 — 계정이 끊기지 않는다. 로그아웃 후 이메일+비밀번호로 다시 로그인하면
+같은 닉네임·기록으로 이어지는 것을 실제 Production 브라우저에서 확인했다.
 
 닉네임의 source of truth 는 서버의 `profiles` 테이블이며 localStorage 가
 아니다. 로그아웃 후 재로그인해도, 다른 기기에서 로그인해도 같은 이름으로
@@ -136,6 +139,26 @@ Email Magic Link 방식이다. 비밀번호가 없다.
 
 ## 현재 상태
 
-Sprint 0 / 0.1 완료. Sprint 1 (Auth & 지속 익명 정체성) 코드 완료.
-Supabase 프로젝트 연결 후 E2E 검증이 남아 있다.
-상세는 `docs/SPRINTS.md` 참고.
+Sprint 0 / 0.1 / 1 / 1.2 / 2, Brand Rename, Release Fix Sprint 1(QA FAIL
+11건 수정), Reaction 버그 수정(커밋 `5883348`)까지 Production(Vercel +
+Supabase)에 배포되어 있다.
+
+Production 대상으로 anon RLS·A/B 계정 교차 접근(IDOR)·실제 로그인 브라우저
+전체 흐름(회원가입 메일 확인 → Home → Write → Safety → Rest Suggestion →
+3분 Timer → Community → Reaction → My Rest → Logout/Relogin)까지 실제로
+실행해 확인했다. P0/P1 결함 0건, **Release Recommendation: GO**.
+**완벽하다는 뜻은 아니다** — 실행한 QA는 정해진 범위(230건 이상의 개별
+케이스 + 브라우저 E2E 1회 완주) 안에서의 결과이고, 그 범위 밖은 아직
+검증되지 않았다.
+
+알려진 채로 남겨둔 것:
+
+- **국제 전화번호 형식 REVIEW 우회** (`+82 10 …`) — `lib/rest/safety.ts` 의
+  연락처 필터가 국내 형식(`010-…`)만 잡는다. 자해·자살 HIGH_RISK 탐지에는
+  영향 없음. non-blocking P2 backlog.
+- **계정 삭제 미구현** — `service_role` 이 필요해 의도적으로 보류했다.
+  이 키는 RLS 를 전부 우회하므로 앱 어디에도 두지 않기로 했다. Settings
+  화면에는 눌리지 않는 「준비 중」 표시만 있다. 사유와 계획은
+  `docs/ARCHITECTURE.md` 「계정 삭제」 참고.
+
+상세 기록은 `docs/SPRINTS.md` 참고.
